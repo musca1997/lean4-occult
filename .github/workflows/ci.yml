@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan (user-level)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Show toolchain
+        run: |
+          lean --version
+          lake --version
+          cat lean-toolchain
+
+      - name: Fetch dependencies
+        run: lake update
+
+      - name: Get Mathlib cache
+        run: lake exe cache get
+
+      - name: Build library, tests and CLI
+        run: lake build
+
+      - name: CLI smoke tests
+        run: ./scripts/smoke.sh
+
+      - name: Reject forbidden proof shortcuts
+        run: |
+          if grep -rnE '\b(sorry|admit|native_decide|implemented_by|extern)\b' Occult Occult.lean Main.lean Tests.lean; then
+            echo "发现禁用关键字" >&2
+            exit 1
+          fi
+
+      - name: Check axioms
+        run: |
+          cat > /tmp/Axioms.lean <<'EOF'
+          import Occult
+          open Occult
+          #print axioms JiaZi.card_eq_sixty
+          #print axioms JiaZi.next_period_iff
+          #print axioms JiaZi.next_min_period
+          #print axioms JiaZi.existsUnique_index
+          #print axioms JiaZi.card_sameParity_pairs
+          #print axioms WuXing.next_period_iff
+          EOF
+          lake env lean /tmp/Axioms.lean
