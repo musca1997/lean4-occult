@@ -30,6 +30,33 @@
 `WuXing.overcomes` = 索引 `+2 (mod 5)`（相克）。
 这两个方向是**定义**，不是定理；若要改成相反方向，只需替换定义并重跑证明。
 
+逆向映射同样是定义：
+
+* `WuXing.prev` = 索引 `−1 (mod 5)`，即“谁生我”；`prev x` 生 `x`。
+* `WuXing.overcomeBy` = 索引 `−2 (mod 5)`，即“谁克我”；`overcomeBy x` 克 `x`。
+* 等价关系式：`next x = y ↔ x = prev y`（`next_eq_iff_prev`）、
+  `overcomes x = y ↔ x = overcomeBy y`（`overcomes_eq_iff_overcomeBy`）。
+* `prev` 与 `overcomeBy` 都是无不动点的 5 阶置换（`prev_five`、`overcomeBy_five`）。
+
+### 天干与五行（项目约定）
+
+| 天干 | 甲 | 乙 | 丙 | 丁 | 戊 | 己 | 庚 | 辛 | 壬 | 癸 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 五行 | 木 | 木 | 火 | 火 | 土 | 土 | 金 | 金 | 水 | 水 |
+
+即 `TianGan.wuXing` 的序号是 `toNat / 2`（`wuXing_toFin`）。这是**编码约定**，
+不是文献引文（见 `docs/sources.md`）。
+
+### 地支本气与五行（项目约定，**不是藏干**）
+
+| 地支 | 子 | 丑 | 寅 | 卯 | 辰 | 巳 | 午 | 未 | 申 | 酉 | 戌 | 亥 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 本气五行 | 水 | 土 | 木 | 木 | 土 | 火 | 火 | 土 | 金 | 金 | 土 | 水 |
+
+* `DiZhi.wuXing` 只给出**单一本气**，逐项展开见 `DiZhi.wuXing_toFin`。
+* **藏干**（含中气、余气）——即一个地支对应多个天干——**不在本库范围内**，
+  本库也不对它作任何断言。见 `docs/sources.md` 第 2 节。
+
 ## 2. 阴阳
 
 * `YinYang.yin` / `YinYang.yang` 两个构造子。
@@ -74,6 +101,8 @@ structure JiaZi where
   `crt a b < 60` 且 `crt a b % 10 = a`、`crt a b % 12 = b`。
   唯一性由 `index_unique` 给出。
 * `JiaZi.next` = 索引 `+1 (mod 60)`，对应“天干、地支各前进一位”。
+* `JiaZi.prev` = 索引 `−1 (mod 60)`，对应“天干、地支各后退一位”；
+  `prev_next` 与 `next_prev` 证明二者互逆，`prev_period_iff` 给出其最小正周期也是 60。
 
 ## 4. 周期 vs 最小周期
 

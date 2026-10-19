@@ -8,6 +8,7 @@ Occult/DiZhi.lean
 import Mathlib.Data.Fintype.Card
 import Mathlib.Tactic
 import Occult.YinYang
+import Occult.WuXing
 
 namespace Occult
 
@@ -126,6 +127,35 @@ theorem ofNatMod_eq_iff (a b : Nat) : ofNatMod a = ofNatMod b ↔ a % 12 = b % 1
     congr 1
     apply Fin.ext
     simpa using h
+
+/-- 地支的**本气**五行（项目约定，**不是藏干**）：
+子水、丑土、寅木、卯木、辰土、巳火、午火、未土、申金、酉金、戌土、亥水。
+藏干（含中气、余气）不在本库范围内；见 `docs/conventions.md` 与 `docs/sources.md`。 -/
+def wuXing : DiZhi → WuXing
+  | zi => WuXing.water
+  | chou => WuXing.earth
+  | yin => WuXing.wood
+  | mao => WuXing.wood
+  | chen => WuXing.earth
+  | si => WuXing.fire
+  | wu => WuXing.fire
+  | wei => WuXing.earth
+  | shen => WuXing.metal
+  | you => WuXing.metal
+  | xu => WuXing.earth
+  | hai => WuXing.water
+
+/-- 地支本气五行的具体编码（逐项展开，便于审阅）。 -/
+theorem wuXing_toFin (b : DiZhi) : b.wuXing.toFin.val =
+    match b with
+    | zi => 4 | chou => 2 | yin => 0 | mao => 0 | chen => 2 | si => 1
+    | wu => 1 | wei => 2 | shen => 3 | you => 3 | xu => 2 | hai => 4 := by
+  cases b <;> rfl
+
+/-- 按序号取地支不改变本气五行（编码往返的直接推论）。 -/
+@[simp]
+theorem wuXing_ofNatMod_toNat (b : DiZhi) : (ofNatMod b.toNat).wuXing = b.wuXing := by
+  rw [ofNatMod_toNat]
 
 /-- 地支的阴阳：偶数序号为阳，奇数序号为阴。 -/
 def yinYang (b : DiZhi) : YinYang := YinYang.ofParity b.toNat

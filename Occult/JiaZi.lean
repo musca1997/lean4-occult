@@ -115,6 +115,14 @@ def next (z : JiaZi) : JiaZi :=
 theorem toIndex_next (z : JiaZi) : (next z).toIndex.val = (z.toIndex.val + 1) % 60 := by
   simp [next, toIndex_ofIndex]
 
+/-- 六十甲子的上一步：天干、地支各后退一位。 -/
+def prev (z : JiaZi) : JiaZi :=
+  ofIndex ⟨(z.toIndex.val + 59) % 60, Nat.mod_lt _ (by decide)⟩
+
+/-- `prev` 在索引上就是减一取模。 -/
+theorem toIndex_prev (z : JiaZi) : (prev z).toIndex.val = (z.toIndex.val + 59) % 60 := by
+  simp [prev, toIndex_ofIndex]
+
 /-- 迭代 `next` 与索引加法一致。 -/
 theorem toIndex_iterate (n : Nat) (z : JiaZi) :
     ((next^[n] z).toIndex).val = (z.toIndex.val + n) % 60 := by
@@ -122,6 +130,15 @@ theorem toIndex_iterate (n : Nat) (z : JiaZi) :
   | zero => simp [Nat.mod_eq_of_lt z.toIndex.isLt]
   | succ k ih =>
     rw [Function.iterate_succ_apply', toIndex_next, ih]
+    omega
+
+/-- 迭代 `prev` 与索引减法一致。 -/
+theorem toIndex_prev_iterate (n : Nat) (z : JiaZi) :
+    ((prev^[n] z).toIndex).val = (z.toIndex.val + 59 * n) % 60 := by
+  induction n generalizing z with
+  | zero => simp [Nat.mod_eq_of_lt z.toIndex.isLt]
+  | succ k ih =>
+    rw [Function.iterate_succ_apply', toIndex_prev, ih]
     omega
 
 /-- 六十甲子的周期上界：迭代 60 次回到自身。 -/
@@ -151,6 +168,56 @@ theorem next_period_iff (n : Nat) (z : JiaZi) : next^[n] z = z ↔ 60 ∣ n := b
     show ((next^[60 * k] z).toIndex).val = z.toIndex.val
     rw [toIndex_iterate]
     simp
+
+/-- `prev` 是 `next` 的左逆。 -/
+theorem prev_next (z : JiaZi) : prev (next z) = z := by
+  apply equivFin.injective
+  apply Fin.ext
+  show ((prev (next z)).toIndex).val = z.toIndex.val
+  rw [toIndex_prev, toIndex_next]
+  have hlt := z.toIndex.isLt
+  omega
+
+/-- `prev` 是 `next` 的右逆。 -/
+theorem next_prev (z : JiaZi) : next (prev z) = z := by
+  apply equivFin.injective
+  apply Fin.ext
+  show ((next (prev z)).toIndex).val = z.toIndex.val
+  rw [toIndex_next, toIndex_prev]
+  have hlt := z.toIndex.isLt
+  omega
+
+/-- `prev` 是单射（`next` 的逆映射）。 -/
+theorem prev_injective : Function.Injective prev := by
+  intro a b h
+  have h' := congrArg next h
+  simpa [next_prev] using h'
+
+/-- `prev` 迭代 60 次回到自身。 -/
+theorem prev_sixty (z : JiaZi) : prev^[60] z = z := by
+  apply equivFin.injective
+  apply Fin.ext
+  show ((prev^[60] z).toIndex).val = z.toIndex.val
+  rw [toIndex_prev_iterate]
+  have hlt := z.toIndex.isLt
+  omega
+
+/-- `prev` 的最小正周期也是 60。 -/
+theorem prev_period_iff (n : Nat) (z : JiaZi) : prev^[n] z = z ↔ 60 ∣ n := by
+  constructor
+  · intro h
+    have h1 : (prev^[n] z).toIndex = z.toIndex := by rw [h]
+    have h2 := congrArg Fin.val h1
+    rw [toIndex_prev_iterate] at h2
+    omega
+  · intro h
+    obtain ⟨k, rfl⟩ := h
+    apply equivFin.injective
+    apply Fin.ext
+    show ((prev^[60 * k] z).toIndex).val = z.toIndex.val
+    rw [toIndex_prev_iterate]
+    have hlt := z.toIndex.isLt
+    omega
 
 /-- 第 `n` 位的天干序号是 `n % 10`。 -/
 @[simp]

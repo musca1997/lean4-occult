@@ -39,7 +39,15 @@
 - [x] 六十甲子**最小**正周期：`next_period_iff`（`60 ∣ n`）、`next_min_period`
 - [x] 同阴阳配对双射：`sameParityEquiv`、`card_sameParity_pairs`、`existsUnique_index`
 - [x] 相位投影：`stem_toNat_eq` / `branch_toNat_eq` / `ofIndex_coords`
-- [x] 共 84 条 theorem/lemma（含 CLI 解析，见 `docs/scope.md` 清单）
+- [x] 天干五行映射：`TianGan.wuXing`（甲乙木…壬癸水），`wuXing_toFin`、`wuXing_eq_iff`、
+      `wuXing_ofNatMod_add_two`
+- [x] 地支**本气**五行映射：`DiZhi.wuXing`（明确**不是藏干**），`wuXing_toFin`、
+      `wuXing_ofNatMod_toNat`
+- [x] 六十甲子后退 `JiaZi.prev` 及前后互逆：`prev_next`、`next_prev`、`prev_injective`、
+      `prev_sixty`、`prev_period_iff`
+- [x] 五行生克逆向 API：`WuXing.prev`、`WuXing.overcomeBy` 与
+      `next_eq_iff_prev`、`overcomes_eq_iff_overcomeBy`、各自互逆与周期/无不动点定理
+- [x] 共 108 条 theorem/lemma（含 CLI 解析，见 `docs/scope.md` 清单）
 
 ### M3 CLI `[x]`
 
@@ -60,13 +68,43 @@
 - [x] `.github/workflows/ci.yml`：固定工具链 + `lake exe cache get` + `lake build` + CLI 冒烟测试
 - [x] `scripts/smoke.sh`：本地 CLI 有效/非法输入回归
 
-### M5 明确不在 v0.1 `[~]`
+### M5 证明卫生自动拦截 `[x]`
+
+- [x] `scripts/check_hygiene.sh`：扫描禁用关键字与自定义 `axiom`/`constant` 声明
+- [x] 对库内全部 theorem/lemma 运行 `#print axioms`，白名单仅
+      `propext`、`Classical.choice`、`Quot.sound`；出现其他公理即失败
+- [x] CI 调用该脚本，而不是只“打印”公理
+
+### M5.5 明确不在 v0.1 `[~]`
 
 - [~] 规则引擎（刑冲合害、藏干、十神、旺衰）
 - [~] 紫微斗数、西方占星
 - [~] 出生时间排盘（需要历法/时区/真太阳时，属于经验建模而非本库的数学核心）
 - [~] UI / Web / 数据库
 - [~] 对传统文献的引文核对（见 `docs/sources.md` 的“未核查”一节）
+
+## 路线图（v0.2 及以后）
+
+以下只是方向，**未完成的条目不写成已完成**；每个版本仍需构建、测试与公理检查通过。
+
+### v0.2 紫微十二宫纯位置结构 `[ ]`
+
+* `Fin 12` 表示宫位；**抽象位置**与命宫/财帛宫等**语义名称**分开。
+* 旋转与加法组合、逆操作；对宫偏移 6（对宫对宫为自身、无不动点）。
+* 三合偏移 4/8（三次偏移 4 回原位）；三方四正有限集 `{p, p+4, p+6, p+8}` 基数为 4。
+* 整体旋转保持对宫、三合、三方四正。
+* CLI `lean4-occult ziwei relations <p>`，严格校验 `0..11`，非法/缺参/多参报错。
+* **不做**星曜、出生排盘、四化、限运等依赖历法或未核查传统说法的内容。
+
+### v0.3 来源明确的小安星子系统 `[ ]`
+
+* 仅当能给出可核查来源（版本、卷次、页码）并逐条登记到 `docs/sources.md` 时才开始。
+* 在此之前，不对小安星的具体起例作任何断言。
+
+### 之后：规则引擎 / AI `[ ]`
+
+* 在有限结构与来源登记稳定之后，再考虑刑冲合害等规则引擎与机器学习辅助；
+* 这些都不属于“可证明的有限组合结构”，需要单独的范围文件与免责声明。
 
 ## 验收标准（v0.1）
 

@@ -45,6 +45,13 @@ Decompressed 9031 file(s)
 ```
 $ lake build
 Build completed successfully (6277 jobs).
+
+$ ./scripts/smoke.sh
+通过 19 项，失败 0 项
+
+$ ./scripts/check_hygiene.sh
+共 108 条待检查
+==> 公理检查通过：只出现 propext、Classical.choice、Quot.sound
 ```
 
 仅剩 Mathlib 的 module-system 风格警告（见 README 说明），无 error。

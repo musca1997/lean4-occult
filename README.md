@@ -11,6 +11,11 @@
 v0.1，可构建、可运行。工具链固定为 `leanprover/lean4:v4.35.0`，
 Mathlib 固定为 `v4.35.0`。
 
+v0.1 已在最初骨架之上补齐：天干五行映射、地支**本气**五行映射（明确不是藏干）、
+六十甲子后退 `prev` 及前后互逆、五行生克逆向 API，并把证明卫生（禁用关键字 /
+自定义 `axiom`）做成 CI 强制检查。v0.2（紫微十二宫纯位置结构）见
+`PLAN.md` 的路线图。
+
 ## 快速开始
 
 ```bash
@@ -58,10 +63,10 @@ lean4-occult --help             帮助
 | 文件 | 内容 |
 | --- | --- |
 | `Occult/YinYang.lean` | `YinYang`（阴/阳），对合 `neg`，奇偶解释 `ofParity` |
-| `Occult/WuXing.lean` | `WuXing`（木火土金水），相生 `next`、相克 `overcomes` |
-| `Occult/TianGan.lean` | `TianGan`（甲乙…癸），序号、阴阳、汉字解析 |
-| `Occult/DiZhi.lean` | `DiZhi`（子丑…亥），序号、阴阳、汉字解析 |
-| `Occult/JiaZi.lean` | `JiaZi`（同阴阳配对），`Fin 60` 等价，`next` 与周期定理 |
+| `Occult/WuXing.lean` | `WuXing`（木火土金水），相生 `next`、相克 `overcomes`、逆向 `prev`/`overcomeBy` |
+| `Occult/TianGan.lean` | `TianGan`（甲乙…癸），序号、阴阳、五行映射、汉字解析 |
+| `Occult/DiZhi.lean` | `DiZhi`（子丑…亥），序号、阴阳、**本气**五行映射、汉字解析 |
+| `Occult/JiaZi.lean` | `JiaZi`（同阴阳配对），`Fin 60` 等价，`next`/`prev` 与周期定理 |
 | `Occult/Cli.lean` | CLI 输入解析 `parseNat?`（可在测试中直接检查） |
 | `Tests.lean` | 关键结论的 `example` 回归检查 |
 | `Main.lean` | CLI |
@@ -76,9 +81,28 @@ lean4-occult --help             帮助
   与六十甲子一一对应，共 60 个。
 * `JiaZi.existsUnique_index`：每个同阴阳组合有唯一索引 `n < 60`。
 * `WuXing.next_period_iff`：五行相生的最小正周期是 5。
+* `WuXing.next_eq_iff_prev` / `overcomes_eq_iff_overcomeBy`：生克的逆向关系与
+  逆向映射 `prev` / `overcomeBy` 等价；`prev_next`、`next_prev` 证明互逆。
+* `TianGan.wuXing_toFin`：天干五行序号 = 天干序号 `/ 2`（甲乙木…壬癸水）。
+* `DiZhi.wuXing_toFin`：地支本气五行逐项展开（子水…亥水；**不是藏干**）。
+* `JiaZi.prev_next` / `next_prev`：六十甲子前进与后退互逆；
+  `JiaZi.prev_period_iff`：后退的最小正周期同样是 60。
 * `YinYang.ofParity_eq_iff`：阴阳编码由奇偶性完全决定。
 
-完整清单（84 条 theorem/lemma）见 `docs/scope.md`。
+完整清单（108 条 theorem/lemma）见 `docs/scope.md`。
+
+### v0.1 陈述复核
+
+* 「周期」与「最小正周期」分开陈述：`next_sixty` 只声称 60 是周期，
+  真正的周期刻画是 `next_period_iff`（`↔ 60 ∣ n`），并由 `next_min_period`
+  给出更小正步数不闭合的显式陈述；五行同理。
+* 「六十甲子构成单一 60 元循环」由 `next_injective` 与
+  `next_iterate_injective`（前 60 步两两不同）共同支撑，而不是靠枚举断言。
+* 同阴阳配对「恰有 60 个」由 `card_sameParity_pairs` 给出，并与
+  `existsUnique_index` 的双射一致。
+* 新增映射都被明确标注为**项目约定**（`TianGan.wuXing`、`DiZhi.wuXing`），
+  其中 `DiZhi.wuXing` 是单一**本气**，不是藏干；`docs/sources.md` 同步说明
+  这些对应关系尚未做文献核对。
 
 ## 验证记录（本地实测）
 
@@ -135,6 +159,20 @@ $ lake env lean /tmp/Ax.lean     # #print axioms 关键定理
 
 没有项目自定义 `axiom`，没有 `sorry`/`admit`/`native_decide`。
 
+`scripts/check_hygiene.sh` 把上述检查自动化并强制化：
+
+```
+$ ./scripts/check_hygiene.sh
+==> 禁止关键字检查（sorry / admit / native_decide / implemented_by / extern）
+==> 自定义 axiom / constant 声明检查
+==> 收集库内 theorem / lemma
+共 108 条待检查
+==> 公理白名单检查
+==> 公理检查通过：只出现 propext、Classical.choice、Quot.sound
+```
+
+若某条定理引用了白名单之外的公理，脚本会列出并返回非零退出码，CI 随之失败。
+
 ### 关于构建警告
 
 Mathlib 4.35 会打印形如
@@ -151,8 +189,10 @@ Mathlib 4.35 会打印形如
 
 ## 不做的事
 
-规则引擎、紫微斗数、占星、出生排盘、UI 均不在 v0.1 范围内，
-原因见 `docs/scope.md`。传统文献的原文核对也未完成，见 `docs/sources.md`。
+规则引擎、占星、出生排盘、UI 均不在 v0.1 范围内，
+原因见 `docs/scope.md`。紫微斗数的**纯位置结构**属于 v0.2（见 `PLAN.md`），
+v0.1 不含任何紫微内容。地支藏干明确不属于本库：`DiZhi.wuXing` 只是单一本气。
+传统文献的原文核对也未完成，见 `docs/sources.md`。
 
 ## 许可证
 

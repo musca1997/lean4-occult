@@ -12,6 +12,7 @@ Occult/TianGan.lean
 import Mathlib.Data.Fintype.Card
 import Mathlib.Tactic
 import Occult.YinYang
+import Occult.WuXing
 
 namespace Occult
 
@@ -122,6 +123,50 @@ theorem ofNatMod_eq_iff (a b : Nat) : ofNatMod a = ofNatMod b ↔ a % 10 = b % 1
     congr 1
     apply Fin.ext
     simpa using h
+
+/-- 天干的本气五行（项目约定）：甲乙木、丙丁火、戊己土、庚辛金、壬癸水。
+这不是对文献的引用；见 `docs/conventions.md` 与 `docs/sources.md`。 -/
+def wuXing : TianGan → WuXing
+  | jia => WuXing.wood
+  | yi => WuXing.wood
+  | bing => WuXing.fire
+  | ding => WuXing.fire
+  | wu => WuXing.earth
+  | ji => WuXing.earth
+  | geng => WuXing.metal
+  | xin => WuXing.metal
+  | ren => WuXing.water
+  | gui => WuXing.water
+
+/-- 天干五行的序号等于天干序号除以二（向下取整）。 -/
+theorem wuXing_toFin (g : TianGan) : g.wuXing.toFin.val = g.toNat / 2 := by
+  cases g <;> rfl
+
+/-- 两个天干同五行，当且仅当它们的序号落在同一个长度二的区间。 -/
+theorem wuXing_eq_iff (g h : TianGan) :
+    g.wuXing = h.wuXing ↔ g.toNat / 2 = h.toNat / 2 := by
+  constructor
+  · intro hw
+    have := congrArg (fun x : WuXing => x.toFin.val) hw
+    simpa [wuXing_toFin] using this
+  · intro hd
+    apply WuXing.equivFin.injective
+    apply Fin.ext
+    show g.wuXing.toFin.val = h.wuXing.toFin.val
+    simpa [wuXing_toFin] using hd
+
+/-- 天干前进两位，五行前进一位（相生方向）。 -/
+theorem wuXing_ofNatMod_add_two (n : Nat) :
+    (TianGan.ofNatMod (n + 2)).wuXing = WuXing.next (TianGan.ofNatMod n).wuXing := by
+  have h : (TianGan.ofNatMod (n + 2)).toNat / 2 = ((TianGan.ofNatMod n).toNat / 2 + 1) % 5 := by
+    rw [TianGan.toNat_ofNatMod, TianGan.toNat_ofNatMod]
+    omega
+  apply WuXing.equivFin.injective
+  apply Fin.ext
+  show (TianGan.ofNatMod (n + 2)).wuXing.toFin.val =
+    (TianGan.ofNatMod n).wuXing.next.toFin.val
+  rw [wuXing_toFin, WuXing.toFin_next, wuXing_toFin]
+  exact h
 
 /-- 天干的阴阳：偶数序号为阳，奇数序号为阴。 -/
 def yinYang (g : TianGan) : YinYang := YinYang.ofParity g.toNat

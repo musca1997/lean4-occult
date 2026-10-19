@@ -28,6 +28,20 @@ example : WuXing.overcomes WuXing.metal = WuXing.wood := rfl
 example (n : Nat) (x : WuXing) : WuXing.next^[n] x = x ↔ 5 ∣ n :=
   WuXing.next_period_iff n x
 example : WuXing.next^[5] = id := WuXing.next_five
+example : WuXing.prev (WuXing.next WuXing.wood) = WuXing.wood := WuXing.prev_next _
+example : WuXing.next (WuXing.prev WuXing.wood) = WuXing.wood := WuXing.next_prev _
+example (x : WuXing) : WuXing.prev (WuXing.next x) = x := WuXing.prev_next x
+example (x : WuXing) : WuXing.next (WuXing.prev x) = x := WuXing.next_prev x
+example (x : WuXing) : WuXing.overcomeBy (WuXing.overcomes x) = x :=
+  WuXing.overcomeBy_overcomes x
+example (x : WuXing) : WuXing.overcomes (WuXing.overcomeBy x) = x :=
+  WuXing.overcomes_overcomeBy x
+example (x y : WuXing) : WuXing.next x = y ↔ x = WuXing.prev y :=
+  WuXing.next_eq_iff_prev x y
+example (x y : WuXing) : WuXing.overcomes x = y ↔ x = WuXing.overcomeBy y :=
+  WuXing.overcomes_eq_iff_overcomeBy x y
+example : WuXing.prev^[5] = id := WuXing.prev_five
+example : WuXing.overcomeBy^[5] = id := WuXing.overcomeBy_five
 
 /-! ## 天干 / 地支 -/
 
@@ -41,6 +55,25 @@ example : TianGan.parse "甲" = some TianGan.jia := rfl
 example : TianGan.parse "x" = none := rfl
 example : DiZhi.parse "亥" = some DiZhi.hai := rfl
 example : DiZhi.parse "" = none := rfl
+example : TianGan.jia.wuXing = WuXing.wood := rfl
+example : TianGan.gui.wuXing = WuXing.water := rfl
+example : TianGan.bing.wuXing = WuXing.fire := rfl
+example : TianGan.geng.wuXing = WuXing.metal := rfl
+example : TianGan.ji.wuXing = WuXing.earth := rfl
+example (g : TianGan) : g.wuXing.toFin.val = g.toNat / 2 := TianGan.wuXing_toFin g
+example (g h : TianGan) : g.wuXing = h.wuXing ↔ g.toNat / 2 = h.toNat / 2 :=
+  TianGan.wuXing_eq_iff g h
+example (n : Nat) :
+    (TianGan.ofNatMod (n + 2)).wuXing = WuXing.next (TianGan.ofNatMod n).wuXing :=
+  TianGan.wuXing_ofNatMod_add_two n
+example : DiZhi.zi.wuXing = WuXing.water := rfl
+example : DiZhi.chou.wuXing = WuXing.earth := rfl
+example : DiZhi.yin.wuXing = WuXing.wood := rfl
+example : DiZhi.si.wuXing = WuXing.fire := rfl
+example : DiZhi.shen.wuXing = WuXing.metal := rfl
+example : DiZhi.hai.wuXing = WuXing.water := rfl
+example (b : DiZhi) : (DiZhi.ofNatMod b.toNat).wuXing = b.wuXing :=
+  DiZhi.wuXing_ofNatMod_toNat b
 
 /-! ## 六十甲子 -/
 
@@ -71,6 +104,14 @@ example {m n : Nat} (hm : m < 60) (hn : n < 60)
     (h : JiaZi.next^[m] JiaZi.jiaZi = JiaZi.next^[n] JiaZi.jiaZi) : m = n :=
   JiaZi.next_iterate_injective hm hn h
 example : JiaZi.name (JiaZi.ofIndex 59) = "癸亥" := rfl
+example : JiaZi.prev JiaZi.jiaZi = JiaZi.ofIndex 59 := rfl
+example : JiaZi.prev (JiaZi.next JiaZi.jiaZi) = JiaZi.jiaZi := JiaZi.prev_next _
+example (z : JiaZi) : JiaZi.prev (JiaZi.next z) = z := JiaZi.prev_next z
+example (z : JiaZi) : JiaZi.next (JiaZi.prev z) = z := JiaZi.next_prev z
+example : Function.Injective JiaZi.prev := JiaZi.prev_injective
+example (z : JiaZi) : JiaZi.prev^[60] z = z := JiaZi.prev_sixty z
+example (n : Nat) (z : JiaZi) : JiaZi.prev^[n] z = z ↔ 60 ∣ n :=
+  JiaZi.prev_period_iff n z
 
 /-! ## CLI 输入解析 -/
 

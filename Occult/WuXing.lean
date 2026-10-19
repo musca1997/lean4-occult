@@ -83,6 +83,22 @@ def overcomes : WuXing → WuXing
   | fire => metal
   | metal => wood
 
+/-- 相生的逆向：谁生我（`prev x` 生 `x`）。 -/
+def prev : WuXing → WuXing
+  | wood => water
+  | fire => wood
+  | earth => fire
+  | metal => earth
+  | water => metal
+
+/-- 相克的逆向：谁克我（`overcomeBy x` 克 `x`）。 -/
+def overcomeBy : WuXing → WuXing
+  | wood => metal
+  | fire => water
+  | earth => wood
+  | metal => fire
+  | water => earth
+
 /-- 相生等价于序号加 1 再对 5 取模。 -/
 theorem toFin_next (x : WuXing) : (next x).toFin.val = (x.toFin.val + 1) % 5 := by
   cases x <;> rfl
@@ -138,6 +154,67 @@ theorem overcomes_ne_self (x : WuXing) : overcomes x ≠ x := by
 /-- 相生与相克是不同的关系。 -/
 theorem overcomes_ne_next (x : WuXing) : overcomes x ≠ next x := by
   cases x <;> decide
+
+/-- `prev` 是 `next` 的左逆。 -/
+theorem prev_next (x : WuXing) : prev (next x) = x := by
+  cases x <;> rfl
+
+/-- `prev` 是 `next` 的右逆。 -/
+theorem next_prev (x : WuXing) : next (prev x) = x := by
+  cases x <;> rfl
+
+/-- `prev` 也是单射（`next` 的逆映射）。 -/
+theorem prev_injective : Function.Injective prev := by
+  intro a b h
+  cases a <;> cases b <;> simp [prev] at h ⊢
+
+/-- 逆向映射 `prev` 没有不动点。 -/
+theorem prev_ne_self (x : WuXing) : prev x ≠ x := by
+  cases x <;> decide
+
+/-- `prev` 迭代五次回到原点。 -/
+theorem prev_five : prev^[5] = id := by
+  funext x
+  cases x <;> rfl
+
+/-- 相生关系与逆向映射的等价刻画。 -/
+theorem next_eq_iff_prev (x y : WuXing) : next x = y ↔ x = prev y := by
+  constructor
+  · intro h
+    rw [← h, prev_next]
+  · intro h
+    rw [h, next_prev]
+
+/-- `overcomeBy` 是 `overcomes` 的左逆。 -/
+theorem overcomeBy_overcomes (x : WuXing) : overcomeBy (overcomes x) = x := by
+  cases x <;> rfl
+
+/-- `overcomeBy` 是 `overcomes` 的右逆。 -/
+theorem overcomes_overcomeBy (x : WuXing) : overcomes (overcomeBy x) = x := by
+  cases x <;> rfl
+
+/-- `overcomeBy` 是单射。 -/
+theorem overcomeBy_injective : Function.Injective overcomeBy := by
+  intro a b h
+  cases a <;> cases b <;> simp [overcomeBy] at h ⊢
+
+/-- 逆向的相克映射没有不动点。 -/
+theorem overcomeBy_ne_self (x : WuXing) : overcomeBy x ≠ x := by
+  cases x <;> decide
+
+/-- `overcomeBy` 迭代五次回到原点。 -/
+theorem overcomeBy_five : overcomeBy^[5] = id := by
+  funext x
+  cases x <;> rfl
+
+/-- 相克关系与逆向映射的等价刻画。 -/
+theorem overcomes_eq_iff_overcomeBy (x y : WuXing) :
+    overcomes x = y ↔ x = overcomeBy y := by
+  constructor
+  · intro h
+    rw [← h, overcomeBy_overcomes]
+  · intro h
+    rw [h, overcomes_overcomeBy]
 
 /-- 从木出发的相生轨道覆盖全部五行。 -/
 theorem next_orbit_wood (y : WuXing) : ∃ n, n < 5 ∧ next^[n] wood = y := by
