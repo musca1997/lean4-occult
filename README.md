@@ -1,20 +1,24 @@
 # lean4-occult
 
 用 Lean 4 形式化**阴阳、五行、十天干、十二地支、六十甲子**的有限组合结构，
-并证明其基本性质（基数、编码往返、周期与最小正周期、同阴阳配对双射）。
+并证明其基本性质（基数、编码往返、周期与最小正周期、同阴阳配对双射）；
+v0.2 起还包括**紫微十二宫的纯位置结构**（旋转、对宫、三合、三方四正）。
 
 > 本项目只处理**可精确定义的有限结构**。它不声称、也不检验任何传统术数体系
 > 的经验有效性；`docs/sources.md` 明确列出哪些内容属于项目约定、哪些尚未核查。
 
 ## 状态
 
-v0.1，可构建、可运行。工具链固定为 `leanprover/lean4:v4.35.0`，
+v0.2，可构建、可运行。工具链固定为 `leanprover/lean4:v4.35.0`，
 Mathlib 固定为 `v4.35.0`。
 
-v0.1 已在最初骨架之上补齐：天干五行映射、地支**本气**五行映射（明确不是藏干）、
-六十甲子后退 `prev` 及前后互逆、五行生克逆向 API，并把证明卫生（禁用关键字 /
-自定义 `axiom`）做成 CI 强制检查。v0.2（紫微十二宫纯位置结构）见
-`PLAN.md` 的路线图。
+* v0.1：阴阳、五行、干支、六十甲子；补齐了天干五行映射、地支**本气**五行映射
+  （明确不是藏干）、六十甲子后退 `prev` 及前后互逆、五行生克逆向 API，
+  并把证明卫生（禁用关键字 / 自定义 `axiom`）做成 CI 强制检查。
+* v0.2：紫微十二宫**纯位置结构**（`Fin 12`）：旋转与加法组合、逆操作、
+  对宫偏移 6、三合偏移 4/8、三方四正基数 4，以及整体旋转保持这些结构；
+  语义宫名与抽象位置分开，**不含星曜与出生排盘**。
+* v0.3 及以后见 `PLAN.md` 路线图。
 
 ## 快速开始
 
@@ -37,6 +41,17 @@ lake env lean4-occult cycle 59
 lake env lean4-occult pair 甲 子
 lake env lean4-occult pair 甲 丑   # 退出码 1
 lake env lean4-occult list
+lake env lean4-occult ziwei relations 0
+```
+
+`ziwei relations 0` 输出：
+
+```
+位置 0
+自身 0
+对宫 6
+三合 4, 8
+三方四正 0/4/6/8
 ```
 
 ## CLI
@@ -45,6 +60,7 @@ lake env lean4-occult list
 lean4-occult cycle <n>          显示第 n 位（0–59）的甲子及下一步
 lean4-occult pair <天干> <地支>  由干支查索引（要求同阴阳）
 lean4-occult list               列出全部六十甲子
+lean4-occult ziwei relations <位置>  显示位置（0–11）的自身、对宫、三合、三方四正
 lean4-occult --help             帮助
 ```
 
@@ -57,6 +73,8 @@ lean4-occult --help             帮助
 * `pair 甲 丑`、`pair 乙 子`：阴阳不同，不属于六十甲子
 * `pair 甲`、`pair 甲 子 丑`：参数个数不对
 * `pair 子 甲`、`pair 甲 X`：未知天干/地支
+* `ziwei relations 12`、`ziwei relations -1`、`ziwei relations abc`：越界或非十进制
+* `ziwei relations`、`ziwei relations 1 2`：缺参或多参
 
 ## 库结构
 
@@ -68,6 +86,9 @@ lean4-occult --help             帮助
 | `Occult/DiZhi.lean` | `DiZhi`（子丑…亥），序号、阴阳、**本气**五行映射、汉字解析 |
 | `Occult/JiaZi.lean` | `JiaZi`（同阴阳配对），`Fin 60` 等价，`next`/`prev` 与周期定理 |
 | `Occult/Cli.lean` | CLI 输入解析 `parseNat?`（可在测试中直接检查） |
+| `Occult/ZiWei/Position.lean` | `Position = Fin 12`，旋转、对宫、三合、三方四正 |
+| `Occult/ZiWei/Relations.lean` | `Palace` 十二宫名、固定偏移 `offset`、`atPos` |
+| `Occult/ZiWei/Properties.lean` | 旋转保持结构、任意参考位置下的命宫三方四正 |
 | `Tests.lean` | 关键结论的 `example` 回归检查 |
 | `Main.lean` | CLI |
 
@@ -88,8 +109,17 @@ lean4-occult --help             帮助
 * `JiaZi.prev_next` / `next_prev`：六十甲子前进与后退互逆；
   `JiaZi.prev_period_iff`：后退的最小正周期同样是 60。
 * `YinYang.ofParity_eq_iff`：阴阳编码由奇偶性完全决定。
+* `ZiWei.Position.opposite_involutive` / `opposite_ne_self`：对宫的对宫是自身，
+  且对宫没有不动点。
+* `ZiWei.Position.trineForward_three`：连续偏移 4 三次回到原位；
+  `trineBackward_eq_trineForward_twice`：偏移 8 等于偏移 4 两次。
+* `ZiWei.Position.triad_card`：三方四正 `{p, p+4, p+6, p+8}` 恰有 4 个元素。
+* `ZiWei.Position.rotate_triad` / `mem_triad_rotate_iff`：整体旋转保持三方四正。
+* `ZiWei.Palace.offset_injective` / `card_eq_twelve`：十二宫名与 `Fin 12` 一一对应。
+* `ZiWei.Position.atPos_triad_ming`：任意参考位置下，命、财帛、迁移、官禄
+  构成命宫的三方四正。
 
-完整清单（108 条 theorem/lemma）见 `docs/scope.md`。
+完整清单（151 条 theorem/lemma）见 `docs/scope.md`。
 
 ### v0.1 陈述复核
 
@@ -104,13 +134,24 @@ lean4-occult --help             帮助
   其中 `DiZhi.wuXing` 是单一**本气**，不是藏干；`docs/sources.md` 同步说明
   这些对应关系尚未做文献核对。
 
+### v0.2 陈述复核
+
+* 紫微部分只断言**位置**事实：`Fin 12` 上的旋转、对宫、三合、三方四正，
+  以及宫名相对固定参考位置的偏移；不出现星曜、四化、限运、出生时间。
+* 「三方四正恰有 4 个元素」由 `triad_card` 证明，且集合按偏移显式写出
+  `{p, p+4, p+6, p+8}`，不使用枚举 12 个位置的方式。
+* 「旋转保持三方四正」既有集合像形式（`rotate_triad`），也有成员形式
+  （`mem_triad_rotate_iff`），并给出基数不变（`rotate_triad_card`）。
+* 语义宫名与偏移表在 `docs/conventions.md` 第 6 节标为**项目约定**，
+  `anchor` 由使用者提供，本库不计算命宫。
+
 ## 验证记录（本地实测）
 
 环境：NixOS 25.11，Lean 4.35.0，Mathlib v4.35.0（缓存）。
 
 ```
 $ lake build
-Build completed successfully (6277 jobs).
+Build completed successfully (6285 jobs).
 
 $ .lake/build/bin/lean4-occult cycle 0
 索引 0：甲子（甲阳，天干 0，地支 0），下一步 乙丑（索引 1）
@@ -143,9 +184,26 @@ $ .lake/build/bin/lean4-occult cycle 1x ; echo $?
 $ .lake/build/bin/lean4-occult list | wc -l
 60
 
+$ .lake/build/bin/lean4-occult ziwei relations 0
+位置 0
+自身 0
+对宫 6
+三合 4, 8
+三方四正 0/4/6/8
+
+$ .lake/build/bin/lean4-occult ziwei relations 12 ; echo $?
+错误：ziwei relations 的位置必须在 0–11 之间，收到 12
+...
+1
+
+$ .lake/build/bin/lean4-occult ziwei relations ; echo $?
+错误：ziwei relations 缺少位置参数（0–11）
+...
+1
+
 $ ./scripts/smoke.sh
 ...
-通过 19 项，失败 0 项
+通过 29 项，失败 0 项
 ```
 
 公理检查：
@@ -166,7 +224,7 @@ $ ./scripts/check_hygiene.sh
 ==> 禁止关键字检查（sorry / admit / native_decide / implemented_by / extern）
 ==> 自定义 axiom / constant 声明检查
 ==> 收集库内 theorem / lemma
-共 108 条待检查
+共 151 条待检查
 ==> 公理白名单检查
 ==> 公理检查通过：只出现 propext、Classical.choice、Quot.sound
 ```
@@ -189,9 +247,10 @@ Mathlib 4.35 会打印形如
 
 ## 不做的事
 
-规则引擎、占星、出生排盘、UI 均不在 v0.1 范围内，
-原因见 `docs/scope.md`。紫微斗数的**纯位置结构**属于 v0.2（见 `PLAN.md`），
-v0.1 不含任何紫微内容。地支藏干明确不属于本库：`DiZhi.wuXing` 只是单一本气。
+规则引擎、占星、出生排盘、UI 均不在本库范围内，原因见 `docs/scope.md`。
+v0.2 只包含紫微斗数的**纯位置结构**：星曜、安星、四化、限运与大限流年
+均不包含；`Palace.atPos` 的 `anchor` 由使用者提供，本库不计算命宫。
+地支藏干明确不属于本库：`DiZhi.wuXing` 只是单一本气。
 传统文献的原文核对也未完成，见 `docs/sources.md`。
 
 ## 许可证

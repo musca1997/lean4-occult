@@ -62,6 +62,17 @@ expect_fail "pair 多参"             "无法识别"        pair 甲 子 丑
 expect_fail "cycle 超大数"          "0–59"            cycle 999999999999999999999999
 expect_ok   "cycle 007 前导零"      "辛未"            cycle 007
 
+expect_ok   "ziwei relations 0 自身"    "自身 0"                ziwei relations 0
+expect_ok   "ziwei 0 对宫"              "对宫 6"                ziwei relations 0
+expect_ok   "ziwei 0 三合"              "三合 4, 8"             ziwei relations 0
+expect_ok   "ziwei 0 三方四正"          "三方四正 0/4/6/8"      ziwei relations 0
+expect_ok   "ziwei relations 11"        "位置 11"               ziwei relations 11
+expect_fail "ziwei relations 12 越界"   "0–11"                  ziwei relations 12
+expect_fail "ziwei relations -1"        "十进制"                ziwei relations -1
+expect_fail "ziwei relations abc"       "十进制"                ziwei relations abc
+expect_fail "ziwei relations 缺参"      "缺少位置参数"          ziwei relations
+expect_fail "ziwei relations 多参"      "只接受一个位置参数"    ziwei relations 1 2
+
 count="$("$BIN" list 2>/dev/null | wc -l)"
 if [[ "$count" -ne 60 ]]; then
   echo "FAIL [list 行数] 期望 60，实际 $count"; fail=$((fail+1))

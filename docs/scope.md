@@ -1,7 +1,8 @@
 # 范围与定理清单（scope）
 
-v0.1 只做有限组合结构与可证明性质。本文件是 `PLAN.md` 的细化，列出全部
-theorem/lemma，便于审阅覆盖面。
+本文件覆盖 v0.1 与 v0.2：前者是阴阳、五行、干支、六十甲子的有限组合结构；
+后者是紫微十二宫的**纯位置结构**（不含星曜与出生排盘）。本文件是
+`PLAN.md` 的细化，列出全部 theorem/lemma，便于审阅覆盖面。
 
 ## 1. 范围内
 
@@ -14,6 +15,8 @@ theorem/lemma，便于审阅覆盖面。
 | `TianGan` | `Occult/TianGan.lean` | 10 | `Fin 10` |
 | `DiZhi` | `Occult/DiZhi.lean` | 12 | `Fin 12` |
 | `JiaZi` | `Occult/JiaZi.lean` | 60 | `Fin 60` |
+| `ZiWei.Position` | `Occult/ZiWei/Position.lean` | 12 | `Fin 12`（同义） |
+| `ZiWei.Palace` | `Occult/ZiWei/Relations.lean` | 12 | `Fin 12`（经 `offset` 双射） |
 | `parseNat?` | `Occult/Cli.lean` | — | 非空 ASCII 十进制解析 |
 
 ### 结构映射
@@ -35,8 +38,13 @@ theorem/lemma，便于审阅覆盖面。
 | 甲子后退 | `JiaZi.prev` | `prev_next`、`next_prev`、`prev_sixty`、`prev_period_iff` |
 | 同阴阳配对 | `JiaZi.sameParityEquiv` | `card_sameParity_pairs`、`existsUnique_index` |
 | 解析/打印 | `toChar`/`ofChar`/`parse?`/`name` | `ofChar_toChar`、`parse?_name`、`name_injective` |
+| 宫位旋转 | `ZiWei.Position.rotate` | `rotate_add`、`rotate_neg`、`rotate_injective` |
+| 对宫 | `ZiWei.Position.opposite` | `opposite_involutive`、`opposite_ne_self` |
+| 三合 | `ZiWei.Position.trineForward`/`trineBackward` | `trineForward_three`、`trineBackward_eq_trineForward_twice` |
+| 三方四正 | `ZiWei.Position.triad` | `triad_card`、`mem_triad_iff`、`rotate_triad`、`mem_triad_rotate_iff` |
+| 语义宫名 | `ZiWei.Palace.offset`/`atPos` | `offset_injective`、`opposite_ming`、`triad_ming`、`atPos_triad_ming` |
 
-## 2. 全部 theorem / lemma（共 108 条）
+## 2. 全部 theorem / lemma（共 151 条）
 
 下表由源文件按 `theorem`/`lemma` 声明自动核对；`scripts/check_hygiene.sh`
 会对其中每一条运行 `#print axioms`，并在出现非标准公理时使 CI 失败。
@@ -64,13 +72,28 @@ theorem/lemma，便于审阅覆盖面。
 ### `Occult/Cli.lean`（8 条）
 
 `parseNat?_empty`, `parseNat?_zero`, `parseNat?_007`, `parseNat?_59`, `parseNat?_60`, `parseNat?_neg`, `parseNat?_mixed`, `parseNat?_space`
-## 3. 范围外（v0.1 不做）
+
+### `Occult/ZiWei/Position.lean`（14 条）
+
+`toNat_ofNat`, `ofNat_toNat`, `rotate_add`, `rotate_zero`, `rotate_neg`, `rotate_injective`, `opposite_involutive`, `opposite_ne_self`, `trineForward_three`, `trineBackward_eq_trineForward_twice`, `trineForward_ne_self`, `trineBackward_ne_self`, `triad_card`, `mem_triad_iff`
+
+### `Occult/ZiWei/Relations.lean`（15 条）
+
+`offset_ofOffset`, `ofOffset_offset`, `card_eq_twelve`, `offset_injective`, `atPos_ming`, `atPos_rotate`, `opposite_ming`, `opposite_xiongDi`, `opposite_fuQi`, `opposite_ziNv`, `opposite_caiBo`, `opposite_jiE`, `trineForward_ming`, `trineBackward_ming`, `triad_ming`
+
+### `Occult/ZiWei/Properties.lean`（14 条）
+
+`rotate_opposite`, `rotate_trineForward`, `rotate_trineBackward`, `rotate_triad`, `rotate_triad_card`, `mem_triad_rotate_iff`, `opposite_mem_triad`, `trineForward_mem_triad`, `trineBackward_mem_triad`, `self_mem_triad`, `trineForward_atPos_ming`, `opposite_atPos_ming`, `trineBackward_atPos_ming`, `atPos_triad_ming`
+
+## 3. 范围外
 
 | 项目 | 原因 |
 | --- | --- |
-| 规则引擎（刑冲合害、藏干、十神、旺衰） | 依赖大量未核查的传统说法，且不是有限组合结构 |
-| 紫微斗数、西方占星 | 需要另一套完整模型与文献核对，超出 v0.1 |
+| 星曜、紫微/天府等具体安星 | 需要出生时间与历法/起例，且传统版本差异未核查 |
 | 出生排盘 | 需要历法、时区、真太阳时与天文计算，属于经验建模 |
+| 四化、限运、大限流年 | 依赖更多未核查传统说法与历法模型 |
+| 规则引擎（刑冲合害、藏干、十神、旺衰） | 依赖大量未核查的传统说法，且不是有限组合结构 |
+| 西方占星 | 需要另一套完整模型与文献核对 |
 | UI / Web / 数据库 | 与数学核心无关 |
 | 文献引文 | 未完成原文核对，见 `docs/sources.md` |
 
@@ -81,3 +104,4 @@ theorem/lemma，便于审阅覆盖面。
   声明，也对全部 theorem/lemma 运行 `#print axioms`，只允许 Lean 标准公理
   `propext`、`Classical.choice`、`Quot.sound`；CI 直接调用该脚本并以其退出码为准。
 * 周期与最小周期分开陈述（见 `docs/conventions.md` 第 4 节）。
+* 紫微部分只证明“位置 + 偏移”的组合事实，不把任何传统宫位含义写成定理。

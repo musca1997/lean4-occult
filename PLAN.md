@@ -1,4 +1,4 @@
-# PLAN — lean4-occult v0.1
+# PLAN — lean4-occult（v0.1 已完成，v0.2 已完成）
 
 状态标记：`[x]` 已完成并经过本地验证，`[ ]` 未开始，`[~]` 有意排除在 v0.1 之外。
 
@@ -87,16 +87,28 @@
 
 以下只是方向，**未完成的条目不写成已完成**；每个版本仍需构建、测试与公理检查通过。
 
-### v0.2 紫微十二宫纯位置结构 `[ ]`
+### v0.2 紫微十二宫纯位置结构 `[x]`
 
-* `Fin 12` 表示宫位；**抽象位置**与命宫/财帛宫等**语义名称**分开。
-* 旋转与加法组合、逆操作；对宫偏移 6（对宫对宫为自身、无不动点）。
-* 三合偏移 4/8（三次偏移 4 回原位）；三方四正有限集 `{p, p+4, p+6, p+8}` 基数为 4。
-* 整体旋转保持对宫、三合、三方四正。
-* CLI `lean4-occult ziwei relations <p>`，严格校验 `0..11`，非法/缺参/多参报错。
-* **不做**星曜、出生排盘、四化、限运等依赖历法或未核查传统说法的内容。
+* [x] `Occult/ZiWei/Position.lean`：`Position = Fin 12`；抽象位置与语义名称分开。
+* [x] 旋转与加法组合、逆操作：`rotate_add`、`rotate_zero`、`rotate_neg`、
+      `rotate_injective`。
+* [x] 对宫偏移 6：`opposite_involutive`、`opposite_ne_self`。
+* [x] 三合偏移 4/8：`trineForward_three`、
+      `trineBackward_eq_trineForward_twice`，两个方向都无不动点。
+* [x] 三方四正 `{p, p+4, p+6, p+8}` 基数 4：`triad_card`、`mem_triad_iff`。
+* [x] 整体旋转保持对宫/三合/三方四正：`rotate_opposite`、
+      `rotate_trineForward`、`rotate_trineBackward`、`rotate_triad`、
+      `rotate_triad_card`、`mem_triad_rotate_iff`。
+* [x] 语义层 `Occult/ZiWei/Relations.lean`：`Palace` 十二宫名、`offset`、`atPos`
+      与任意 `anchor` 下的语义对宫/命宫三方四正；`offset_injective`、
+      `card_eq_twelve`。
+* [x] `Occult/ZiWei/Properties.lean`：整体性质与 `atPos_triad_ming`。
+* [x] CLI `lean4-occult ziwei relations <p>`，严格校验 `0..11`，
+      非法/缺参/多参退出码 1；smoke 测试覆盖。
+* [x] Tests 回归与文档（conventions/scope/sources/README）同步。
+* [x] **不做**星曜、出生排盘、四化、限运等依赖历法或未核查传统说法的内容。
 
-### v0.3 来源明确的小安星子系统 `[ ]`
+### v0.3 来源明确的小安星子系统 `[ ]`（下一步）
 
 * 仅当能给出可核查来源（版本、卷次、页码）并逐条登记到 `docs/sources.md` 时才开始。
 * 在此之前，不对小安星的具体起例作任何断言。

@@ -11,3 +11,4 @@ import Occult.TianGan
 import Occult.DiZhi
 import Occult.JiaZi
 import Occult.Cli
+import Occult.ZiWei

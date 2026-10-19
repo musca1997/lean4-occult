@@ -7,6 +7,7 @@ Main.lean
   lean4-occult cycle <n>        显示第 n 位（0–59）的甲子及其下一步
   lean4-occult pair <天干> <地支>  由干支查索引，校验同阴阳
   lean4-occult list             列出全部六十甲子
+  lean4-occult ziwei relations <位置>  显示该位置（0–11）的自身、对宫、三合与三方四正
   lean4-occult --help
 
 所有输入都做显式校验，非法输入以退出码 1 结束并在 stderr 给出说明。
@@ -31,8 +32,10 @@ def usage : String :=
   "  lean4-occult cycle <n>          显示第 n 位（0–59）的甲子\n" ++
   "  lean4-occult pair <天干> <地支>  由干支查索引（要求同阴阳）\n" ++
   "  lean4-occult list               列出全部六十甲子\n" ++
+  "  lean4-occult ziwei relations <位置>\n" ++
+  "                                  显示位置（0–11）的自身、对宫、三合、三方四正\n" ++
   "  lean4-occult --help             显示本帮助\n" ++
-  "\n示例：lean4-occult cycle 0 / lean4-occult pair 甲 子"
+  "\n示例：lean4-occult cycle 0 / lean4-occult pair 甲 子 / lean4-occult ziwei relations 0"
 
 def fail (msg : String) : IO UInt32 := do
   IO.eprintln s!"错误：{msg}"
@@ -71,4 +74,25 @@ def main (args : List String) : IO UInt32 := do
       else
         IO.eprintln s!"错误：{g.name}{b.name} 阴阳不同（{g.name} 序号 {g.toNat}，{b.name} 序号 {b.toNat}），不在六十甲子中"
         return 1
+  | ["ziwei", "relations", s] =>
+    match parseNat? s with
+    | none => fail s!"ziwei relations 需要 0–11 的十进制整数，收到 {repr s}"
+    | some n =>
+      if h : n < 12 then
+        let p : ZiWei.Position := ⟨n, h⟩
+        let opp := ZiWei.Position.opposite p
+        let tFwd := ZiWei.Position.trineForward p
+        let tBwd := ZiWei.Position.trineBackward p
+        IO.println s!"位置 {p.val}"
+        IO.println s!"自身 {p.val}"
+        IO.println s!"对宫 {opp.val}"
+        IO.println s!"三合 {tFwd.val}, {tBwd.val}"
+        IO.println s!"三方四正 {p.val}/{tFwd.val}/{opp.val}/{tBwd.val}"
+        return 0
+      else
+        fail s!"ziwei relations 的位置必须在 0–11 之间，收到 {n}"
+  | ["ziwei", "relations"] =>
+    fail "ziwei relations 缺少位置参数（0–11）"
+  | "ziwei" :: "relations" :: _ :: _ =>
+    fail "ziwei relations 只接受一个位置参数（0–11）"
   | _ => fail s!"无法识别的参数：{args}"

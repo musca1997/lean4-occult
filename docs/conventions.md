@@ -132,3 +132,32 @@ structure JiaZi where
   `JiaZi.parse?` 只接受**两个**字符，且要求同阴阳，否则返回 `none`。
 * CLI 的 `cycle` 只接受 ASCII 十进制、且 `0 ≤ n < 60`。
 * 输出中的“阴/阳”由 `YinYang` 直接映射，不做额外解释。
+
+## 6. 紫微十二宫位置（v0.2）
+
+以下全部是**项目约定**，不是对传统紫微斗数文献的引用，也不涉及星曜与出生排盘。
+
+* `ZiWei.Position` 就是 `Fin 12`；序号 0–11 只是位置标记，本身没有语义。
+* `rotate k p = k + p`（`Fin 12` 上的加法）。旋转复合 `rotate (k+l) p =
+  rotate k (rotate l p)`（`rotate_add`），逆操作是 `rotate (-k)`（`rotate_neg`）。
+* 对宫 `opposite p = rotate 6 p`：对宫的对宫是自身（`opposite_involutive`），
+  且没有不动点（`opposite_ne_self`）。
+* 三合两个方向 `trineForward p = rotate 4 p`、`trineBackward p = rotate 8 p`；
+  连续偏移 4 三次回到原位（`trineForward_three`），偏移 8 等于偏移 4 两次
+  （`trineBackward_eq_trineForward_twice`）。
+* 三方四正 `triad p = {p, p+4, p+6, p+8}`，恰有 4 个元素（`triad_card`）。
+
+语义层 `ZiWei.Palace` 只提供宫名与固定偏移：
+
+| 宫名 | 命 | 兄弟 | 夫妻 | 子女 | 财帛 | 疾厄 | 迁移 | 仆役 | 官禄 | 田宅 | 福德 | 父母 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 偏移 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+
+* `Palace.atPos anchor p = anchor + offset p`。`anchor` 是**任意选定**的参考位置；
+  本库不从出生时间计算它。
+* 由此得到六组“语义对宫”：命–迁移、兄弟–仆役、夫妻–官禄、子女–田宅、
+  财帛–福德、疾厄–父母（`opposite_ming` 等）。
+* 命、财帛、迁移、官禄构成命宫的三方四正（`triad_ming`；任意参考位置下为
+  `atPos_triad_ming`）。
+* 传统上“命宫到底落在哪个位置”取决于出生时间；本库**不做**这一步，
+  只证明上述位置关系在任意 `anchor` 下都成立。

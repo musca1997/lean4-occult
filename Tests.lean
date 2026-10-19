@@ -132,4 +132,49 @@ example : (JiaZi.ofIndex ⟨59, by decide⟩).toIndex.val = 59 := rfl
 example (n : Fin 60) : (JiaZi.ofIndex n).toIndex = n := JiaZi.toIndex_ofIndex n
 example (z : JiaZi) : JiaZi.ofIndex z.toIndex = z := JiaZi.ofIndex_toIndex z
 
+/-! ## 紫微十二宫位置（v0.2） -/
+
+example : ZiWei.Position.opposite (0 : ZiWei.Position) = 6 := rfl
+example : ZiWei.Position.trineForward (0 : ZiWei.Position) = 4 := rfl
+example : ZiWei.Position.trineBackward (0 : ZiWei.Position) = 8 := rfl
+example (p : ZiWei.Position) : ZiWei.Position.opposite (ZiWei.Position.opposite p) = p :=
+  ZiWei.Position.opposite_involutive p
+example (p : ZiWei.Position) : ZiWei.Position.opposite p ≠ p :=
+  ZiWei.Position.opposite_ne_self p
+example (p : ZiWei.Position) :
+    ZiWei.Position.trineForward (ZiWei.Position.trineForward (ZiWei.Position.trineForward p)) = p :=
+  ZiWei.Position.trineForward_three p
+example (p : ZiWei.Position) :
+    ZiWei.Position.trineBackward p =
+      ZiWei.Position.trineForward (ZiWei.Position.trineForward p) :=
+  ZiWei.Position.trineBackward_eq_trineForward_twice p
+example (p : ZiWei.Position) : (ZiWei.Position.triad p).card = 4 :=
+  ZiWei.Position.triad_card p
+example (k p q : ZiWei.Position) :
+    q ∈ ZiWei.Position.triad (ZiWei.Position.rotate k p) ↔
+      ZiWei.Position.rotate (-k) q ∈ ZiWei.Position.triad p :=
+  ZiWei.Position.mem_triad_rotate_iff k p q
+example (k p : ZiWei.Position) :
+    ZiWei.Position.opposite (ZiWei.Position.rotate k p) =
+      ZiWei.Position.rotate k (ZiWei.Position.opposite p) :=
+  ZiWei.Position.rotate_opposite k p
+example (k p : ZiWei.Position) :
+    ZiWei.Position.triad (ZiWei.Position.rotate k p) =
+      (ZiWei.Position.triad p).image (ZiWei.Position.rotate k) :=
+  ZiWei.Position.rotate_triad k p
+example : Fintype.card ZiWei.Palace = 12 := ZiWei.Palace.card_eq_twelve
+example : Function.Injective ZiWei.Palace.offset := ZiWei.Palace.offset_injective
+example : ZiWei.Palace.atPos (0 : ZiWei.Position) ZiWei.Palace.ming = 0 :=
+  ZiWei.Palace.atPos_ming 0
+example : ZiWei.Palace.offset ZiWei.Palace.qianYi = 6 := rfl
+example : ZiWei.Position.opposite (ZiWei.Palace.offset ZiWei.Palace.ming) =
+    ZiWei.Palace.offset ZiWei.Palace.qianYi := ZiWei.Palace.opposite_ming
+example (anchor : ZiWei.Position) :
+    ZiWei.Position.triad (ZiWei.Palace.atPos anchor ZiWei.Palace.ming) =
+      {ZiWei.Palace.atPos anchor ZiWei.Palace.ming,
+       ZiWei.Palace.atPos anchor ZiWei.Palace.caiBo,
+       ZiWei.Palace.atPos anchor ZiWei.Palace.qianYi,
+       ZiWei.Palace.atPos anchor ZiWei.Palace.guanLu} :=
+  ZiWei.Position.atPos_triad_ming anchor
+
 end Tests
