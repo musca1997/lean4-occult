@@ -19,7 +19,7 @@
 - [x] 使用 Mathlib 预编译缓存（`lake update` 下载 9031 个文件），未完整构建 Mathlib
 - [x] `git init`
 - [x] 发布采用 MIT License
-- [ ] 提交并推送到公开仓库 `musca1997/lean4-occult`
+- [x] 提交并推送到公开仓库 `musca1997/lean4-occult`
 
 ### M1 有限结构 `[x]`
 
