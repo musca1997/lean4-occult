@@ -73,6 +73,25 @@ expect_fail "ziwei relations abc"       "十进制"                ziwei relatio
 expect_fail "ziwei relations 缺参"      "缺少位置参数"          ziwei relations
 expect_fail "ziwei relations 多参"      "只接受一个位置参数"    ziwei relations 1 2
 
+# v0.3 小安星：禄存、擎羊、陀罗、天马
+expect_ok   "anstar 甲子 禄存寅"        "禄存 寅 (2)"           ziwei anstar 甲 子
+expect_ok   "anstar 甲子 擎羊卯"        "擎羊 卯 (3)"           ziwei anstar 甲 子
+expect_ok   "anstar 甲子 陀罗丑"        "陀罗 丑 (1)"           ziwei anstar 甲 子
+expect_ok   "anstar 甲子 天马寅"        "天马 寅 (2)"           ziwei anstar 甲 子
+expect_ok   "anstar 癸亥 禄存子"        "禄存 子 (0)"           ziwei anstar 癸 亥
+expect_ok   "anstar 癸亥 擎羊丑"        "擎羊 丑 (1)"           ziwei anstar 癸 亥
+expect_ok   "anstar 癸亥 陀罗亥"        "陀罗 亥 (11)"          ziwei anstar 癸 亥
+expect_ok   "anstar 癸亥 天马巳"        "天马 巳 (5)"           ziwei anstar 癸 亥
+expect_ok   "anstar 丙寅 禄存巳"        "禄存 巳 (5)"           ziwei anstar 丙 寅
+expect_ok   "anstar 丙寅 天马申"        "天马 申 (8)"           ziwei anstar 丙 寅
+expect_fail "anstar 甲丑 阴阳不同"      "不是六十甲子"          ziwei anstar 甲 丑
+expect_fail "anstar 乙子 阴阳不同"      "不是六十甲子"          ziwei anstar 乙 子
+expect_fail "anstar 子甲 未知天干"      "未知天干"              ziwei anstar 子 甲
+expect_fail "anstar 甲X 未知地支"       "未知地支"              ziwei anstar 甲 X
+expect_fail "anstar 缺地支"             "缺少地支参数"          ziwei anstar 甲
+expect_fail "anstar 缺两参"             "缺少天干和地支参数"    ziwei anstar
+expect_fail "anstar 多参"               "只接受两个参数"        ziwei anstar 甲 子 丑
+
 count="$("$BIN" list 2>/dev/null | wc -l)"
 if [[ "$count" -ne 60 ]]; then
   echo "FAIL [list 行数] 期望 60，实际 $count"; fail=$((fail+1))

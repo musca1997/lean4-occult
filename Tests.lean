@@ -177,4 +177,97 @@ example (anchor : ZiWei.Position) :
        ZiWei.Palace.atPos anchor ZiWei.Palace.guanLu} :=
   ZiWei.Position.atPos_triad_ming anchor
 
+/-! ## 紫微小安星（v0.3） -/
+
+-- 地支与位置的约定映射：子 0、丑 1、…、亥 11。
+example : ZiWei.Branch.ofDiZhi DiZhi.zi = (0 : ZiWei.Position) := rfl
+example : ZiWei.Branch.ofDiZhi DiZhi.hai = (11 : ZiWei.Position) := rfl
+example : ZiWei.Branch.toDiZhi (0 : ZiWei.Position) = DiZhi.zi := rfl
+example (b : DiZhi) : ZiWei.Branch.toDiZhi (ZiWei.Branch.ofDiZhi b) = b :=
+  ZiWei.Branch.toDiZhi_ofDiZhi b
+example (p : ZiWei.Position) : ZiWei.Branch.ofDiZhi (ZiWei.Branch.toDiZhi p) = p :=
+  ZiWei.Branch.ofDiZhi_toDiZhi p
+example : Function.Injective ZiWei.Branch.ofDiZhi := ZiWei.Branch.ofDiZhi_injective
+
+-- 禄存表：甲寅、乙卯、丙戊巳、丁己午、庚申、辛酉、壬亥、癸子。
+example : ZiWei.MinorStar.luCun TianGan.jia = (2 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.luCun TianGan.bing = (5 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.luCun TianGan.wu = (5 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.luCun TianGan.ding = (6 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.luCun TianGan.ji = (6 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.luCun TianGan.gui = (0 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.luCun TianGan.bing = ZiWei.MinorStar.luCun TianGan.wu :=
+  ZiWei.MinorStar.luCun_bing_eq_wu
+example : ZiWei.MinorStar.luCun TianGan.ding = ZiWei.MinorStar.luCun TianGan.ji :=
+  ZiWei.MinorStar.luCun_ding_eq_ji
+example (g h : TianGan) : ZiWei.MinorStar.luCun g = ZiWei.MinorStar.luCun h ↔
+    g = h ∨
+      (g = TianGan.bing ∧ h = TianGan.wu) ∨
+      (g = TianGan.wu ∧ h = TianGan.bing) ∨
+      (g = TianGan.ding ∧ h = TianGan.ji) ∨
+      (g = TianGan.ji ∧ h = TianGan.ding) :=
+  ZiWei.MinorStar.luCun_eq_iff g h
+example : (Finset.univ.image ZiWei.MinorStar.luCun).card = 8 :=
+  ZiWei.MinorStar.luCun_image_card
+
+-- 擎羊/陀罗：来源例子“癸禄在子，丑宫擎羊，亥宫陀罗”。
+example : ZiWei.MinorStar.qingYang TianGan.gui = (1 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tuoLuo TianGan.gui = (11 : ZiWei.Position) := rfl
+example (g : TianGan) : ZiWei.MinorStar.qingYang g =
+    ZiWei.Position.rotate 1 (ZiWei.MinorStar.luCun g) :=
+  ZiWei.MinorStar.qingYang_eq_rotate_one g
+example (g : TianGan) : ZiWei.MinorStar.tuoLuo g =
+    ZiWei.Position.rotate (-1) (ZiWei.MinorStar.luCun g) :=
+  ZiWei.MinorStar.tuoLuo_eq_rotate_neg_one g
+example (g : TianGan) : ZiWei.MinorStar.qingYang g ≠ ZiWei.MinorStar.luCun g :=
+  ZiWei.MinorStar.qingYang_ne_luCun g
+example (g : TianGan) : ZiWei.MinorStar.tuoLuo g ≠ ZiWei.MinorStar.luCun g :=
+  ZiWei.MinorStar.tuoLuo_ne_luCun g
+example (g : TianGan) : ZiWei.MinorStar.qingYang g ≠ ZiWei.MinorStar.tuoLuo g :=
+  ZiWei.MinorStar.qingYang_ne_tuoLuo g
+example : (Finset.univ.image ZiWei.MinorStar.qingYang).card = 8 :=
+  ZiWei.MinorStar.qingYang_image_card
+example : (Finset.univ.image ZiWei.MinorStar.tuoLuo).card = 8 :=
+  ZiWei.MinorStar.tuoLuo_image_card
+
+-- 天马表：寅午戌→申、申子辰→寅、巳酉丑→亥、亥卯未→巳。
+example : ZiWei.MinorStar.tianMa DiZhi.yin = (8 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.wu = (8 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.xu = (8 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.shen = (2 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.zi = (2 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.chen = (2 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.si = (11 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.you = (11 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.chou = (11 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.hai = (5 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.mao = (5 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.tianMa DiZhi.wei = (5 : ZiWei.Position) := rfl
+example : (Finset.univ.image ZiWei.MinorStar.tianMa).card = 4 :=
+  ZiWei.MinorStar.tianMa_image_card
+example : ¬ Function.Injective ZiWei.MinorStar.tianMa :=
+  ZiWei.MinorStar.tianMa_not_injective
+
+-- 综合安星函数与六十甲子版本。
+example : ZiWei.MinorStar.Star.all.length = 4 := ZiWei.MinorStar.star_all_length
+example : Fintype.card ZiWei.MinorStar.Star = 4 := ZiWei.MinorStar.star_card_eq_four
+example (g : TianGan) (b : DiZhi) : ZiWei.MinorStar.place g b ZiWei.MinorStar.Star.luCun =
+    ZiWei.MinorStar.luCun g := rfl
+example (g : TianGan) (b : DiZhi) : ZiWei.MinorStar.place g b ZiWei.MinorStar.Star.tianMa =
+    ZiWei.MinorStar.tianMa b := rfl
+example : ZiWei.MinorStar.placeJiaZi JiaZi.jiaZi ZiWei.MinorStar.Star.luCun =
+    (2 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.placeJiaZi JiaZi.jiaZi ZiWei.MinorStar.Star.qingYang =
+    (3 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.placeJiaZi JiaZi.jiaZi ZiWei.MinorStar.Star.tuoLuo =
+    (1 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.placeJiaZi JiaZi.jiaZi ZiWei.MinorStar.Star.tianMa =
+    (2 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.placeJiaZi JiaZi.guiHai ZiWei.MinorStar.Star.luCun =
+    (0 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.placeJiaZi JiaZi.guiHai ZiWei.MinorStar.Star.qingYang =
+    (1 : ZiWei.Position) := rfl
+example : ZiWei.MinorStar.placeJiaZi JiaZi.guiHai ZiWei.MinorStar.Star.tuoLuo =
+    (11 : ZiWei.Position) := rfl
+
 end Tests

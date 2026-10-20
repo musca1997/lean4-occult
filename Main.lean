@@ -8,6 +8,8 @@ Main.lean
   lean4-occult pair <天干> <地支>  由干支查索引，校验同阴阳
   lean4-occult list             列出全部六十甲子
   lean4-occult ziwei relations <位置>  显示该位置（0–11）的自身、对宫、三合与三方四正
+  lean4-occult ziwei anstar <天干> <地支>
+                                  按生年干/支安禄存、擎羊、陀罗、天马
   lean4-occult --help
 
 所有输入都做显式校验，非法输入以退出码 1 结束并在 stderr 给出说明。
@@ -34,8 +36,15 @@ def usage : String :=
   "  lean4-occult list               列出全部六十甲子\n" ++
   "  lean4-occult ziwei relations <位置>\n" ++
   "                                  显示位置（0–11）的自身、对宫、三合、三方四正\n" ++
+  "  lean4-occult ziwei anstar <天干> <地支>\n" ++
+  "                                  按生年干/支安禄存、擎羊、陀罗、天马\n" ++
   "  lean4-occult --help             显示本帮助\n" ++
-  "\n示例：lean4-occult cycle 0 / lean4-occult pair 甲 子 / lean4-occult ziwei relations 0"
+  "\n示例：lean4-occult cycle 0 / lean4-occult pair 甲 子 / lean4-occult ziwei relations 0" ++
+  "\n      lean4-occult ziwei anstar 甲 子"
+
+/-- 位置的中文描述：地支名 + 位置序号。 -/
+def describePosition (p : ZiWei.Position) : String :=
+  s!"{(ZiWei.Branch.toDiZhi p).name} ({p.val})"
 
 def fail (msg : String) : IO UInt32 := do
   IO.eprintln s!"错误：{msg}"
@@ -95,4 +104,24 @@ def main (args : List String) : IO UInt32 := do
     fail "ziwei relations 缺少位置参数（0–11）"
   | "ziwei" :: "relations" :: _ :: _ =>
     fail "ziwei relations 只接受一个位置参数（0–11）"
+  | ["ziwei", "anstar", g, b] =>
+    match TianGan.parse g, DiZhi.parse b with
+    | none, _ => fail s!"未知天干 {repr g}（应为 甲 乙 丙 丁 戊 己 庚 辛 壬 癸 之一）"
+    | _, none => fail s!"未知地支 {repr b}（应为 子 丑 寅 卯 辰 巳 午 未 申 酉 戌 亥 之一）"
+    | some g, some b =>
+      if h : g.toNat % 2 = b.toNat % 2 then
+        let z : JiaZi := ⟨g, b, h⟩
+        IO.println s!"干支 {g.name}{b.name}（索引 {z.toIndex.val}）"
+        for star in ZiWei.MinorStar.Star.all do
+          IO.println s!"{star.name} {describePosition (ZiWei.MinorStar.placeJiaZi z star)}"
+        return 0
+      else
+        IO.eprintln s!"错误：{g.name}{b.name} 阴阳不同（{g.name} 序号 {g.toNat}，{b.name} 序号 {b.toNat}），不是六十甲子中的年份"
+        return 1
+  | ["ziwei", "anstar"] =>
+    fail "ziwei anstar 缺少天干和地支参数"
+  | ["ziwei", "anstar", _] =>
+    fail "ziwei anstar 缺少地支参数"
+  | "ziwei" :: "anstar" :: _ :: _ =>
+    fail "ziwei anstar 只接受两个参数（天干 地支）"
   | _ => fail s!"无法识别的参数：{args}"
