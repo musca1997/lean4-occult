@@ -161,3 +161,94 @@ structure JiaZi where
   `atPos_triad_ming`）。
 * 传统上“命宫到底落在哪个位置”取决于出生时间；本库**不做**这一步，
   只证明上述位置关系在任意 `anchor` 下都成立。
+
+## 7. 地支与位置编号（v0.3）
+
+来源文字只用十二支宫位名（子宫、丑宫、…），不给 0–11 的数字。本库的对接
+约定是：
+
+| 地支 | 子 | 丑 | 寅 | 卯 | 辰 | 巳 | 午 | 未 | 申 | 酉 | 戌 | 亥 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `Position` | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+
+* `ZiWei.Branch.ofDiZhi b = ⟨b.toNat, _⟩`；`Branch.toDiZhi p = DiZhi.ofNatMod p.val`。
+* 二者互逆：`toDiZhi_ofDiZhi`、`ofDiZhi_toDiZhi`；`Branch.equiv : DiZhi ≃ Position`
+  是双射（`ofDiZhi_injective`、`ofDiZhi_bijective`）。
+* 这**只是编号约定**，不是来源文字的一部分。改变编号会改变 CLI 的数字输出，
+  但不改变地支名输出；所有来源对照定理都同时给出地支表。
+
+## 8. 年干/年支系小安星（v0.3）
+
+本节的规则属于“来源支持”，但只支持“某版本这样写”，不支持任何吉凶或
+经验有效性主张。来源、版本、段落定位与短引文见 `docs/sources.md` §5。
+“小安星”是本项目对这些非主星安星规则的称呼，不是来源文本中的固定术语。
+
+### 8.1 输入和输出
+
+* 输入是**已经给定**的生年干、生年支；本库不推算年份，不做历法、时区、
+  真太阳时或出生排盘。
+* CLI 要求输入的干支属于六十甲子（同阴阳）；这复用 v0.1 的 `JiaZi` 约束。
+* 输出只是四颗星落在十二支宫位中的位置。
+
+### 8.2 禄存（依生年干）
+
+| 天干 | 甲 | 乙 | 丙 | 丁 | 戊 | 己 | 庚 | 辛 | 壬 | 癸 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 禄存 | 寅 | 卯 | 巳 | 午 | 巳 | 午 | 申 | 酉 | 亥 | 子 |
+| `Position` | 2 | 3 | 5 | 6 | 5 | 6 | 8 | 9 | 11 | 0 |
+
+* 代码：`MinorStar.luCun`；地支表：`luCun_toDiZhi`。
+* 丙、戊同宫（`luCun_bing_eq_wu`）；丁、己同宫（`luCun_ding_eq_ji`）。
+* 因此 10 个天干只落到 8 个位置（`luCun_image_card`），像为
+  `{0,2,3,5,6,8,9,11}`（`luCun_image`）。
+* 来源短引：“甲生禄存在寅宫，乙生在卯丙戊巳，丁己禄存停午方，庚禄居申
+  辛禄酉，壬禄在亥癸禄子。”本库把“丙戊巳”读作“丙、戊均在巳”，
+  把“丁己…午”读作“丁、己均在午”；这是读法解释，见 `docs/sources.md` §5.3。
+
+### 8.3 擎羊、陀罗（随禄存前/后一位）
+
+* `qingYang g = rotate 1 (luCun g)`，即位置 +1（`qingYang_eq_rotate_one`）。
+* `tuoLuo g = rotate (-1) (luCun g)`，即位置 −1（`tuoLuo_eq_rotate_neg_one`）。
+* 方向由来源自己的例子固定：“假如癸禄在子，丑宫安擎羊，亥宫安陀罗”，
+  对应 `qingYang_gui`、`tuoLuo_gui`。
+* 三者互不同位：`qingYang_ne_luCun`、`tuoLuo_ne_luCun`、`qingYang_ne_tuoLuo`。
+* 擎羊、陀罗的像也各只有 8 个位置（`qingYang_image_card`、`tuoLuo_image_card`），
+  显式像分别见 `qingYang_image`、`tuoLuo_image`。
+
+| 天干 | 甲 | 乙 | 丙 | 丁 | 戊 | 己 | 庚 | 辛 | 壬 | 癸 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 擎羊 | 卯 | 辰 | 午 | 未 | 午 | 未 | 酉 | 戌 | 子 | 丑 |
+| 陀罗 | 丑 | 寅 | 辰 | 巳 | 辰 | 巳 | 未 | 申 | 戌 | 亥 |
+
+### 8.4 天马（依生年支）
+
+| 年支组 | 寅午戌 | 申子辰 | 巳酉丑 | 亥卯未 |
+| --- | --- | --- | --- | --- |
+| 天马 | 申 | 寅 | 亥 | 巳 |
+| `Position` | 8 | 2 | 11 | 5 |
+
+* 代码：`MinorStar.tianMa`；地支表：`tianMa_toDiZhi`。
+* 四个三合组分别共用一个马位：`tianMa_yin_wu_xu`、`tianMa_shen_zi_chen`、
+  `tianMa_si_you_chou`、`tianMa_hai_mao_wei`。
+* 像只有四个位置 `{2,5,8,11}`（`tianMa_image`、`tianMa_image_card`），
+  因此 `tianMa` 不是单射（`tianMa_not_injective`）。
+* 来源短引：“寅午戍人马居申，申子辰人马居寅，巳酉丑人马居亥，
+  亥卯未人马居巳。”原文“戍”按三合组读作“戌”，见 `docs/sources.md` §5.3。
+* 只实现**生年支**天马；不实现流年天马、月马。
+
+### 8.5 综合安星与六十甲子
+
+* `MinorStar.place g b star`：给定年干 `g`、年支 `b`，返回四颗星之一的位置。
+  禄存/擎羊/陀罗用 `g`，天马用 `b`。
+* `MinorStar.placeJiaZi z star`：同一函数在 `JiaZi` 上的版本，保证干支同阴阳。
+* 四颗星类型 `MinorStar.Star` 恰有 4 个元素（`star_card_eq_four`）；
+  固定顺序为 `Star.all = [luCun, qingYang, tuoLuo, tianMa]`（`star_all_length`）。
+* 样例：甲子年 → 禄存寅、擎羊卯、陀罗丑、天马寅（`placeJiaZi_jiaZi`）；
+  癸亥年 → 禄存子、擎羊丑、陀罗亥、天马巳。
+
+### 8.6 明确不编码的内容
+
+* 天魁、天钺：来源本节的歌诀有异文且未说明组内哪个是魁/钺，**不实现**。
+* 红鸾、天喜：本版本次不实现。
+* 流禄、流羊、流陀、流年天马、月马：**不实现**。
+* 任何吉凶、格局、四化、大限、流年判断：**不实现**。

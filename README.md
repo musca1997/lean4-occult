@@ -2,14 +2,15 @@
 
 用 Lean 4 形式化**阴阳、五行、十天干、十二地支、六十甲子**的有限组合结构，
 并证明其基本性质（基数、编码往返、周期与最小正周期、同阴阳配对双射）；
-v0.2 起还包括**紫微十二宫的纯位置结构**（旋转、对宫、三合、三方四正）。
+v0.2 起还包括**紫微十二宫的纯位置结构**（旋转、对宫、三合、三方四正）；
+v0.3 增加**来源明确的年干/年支系小安星**（禄存、擎羊、陀罗、天马）。
 
 > 本项目只处理**可精确定义的有限结构**。它不声称、也不检验任何传统术数体系
 > 的经验有效性；`docs/sources.md` 明确列出哪些内容属于项目约定、哪些尚未核查。
 
 ## 状态
 
-v0.2，可构建、可运行。工具链固定为 `leanprover/lean4:v4.35.0`，
+v0.3，可构建、可运行。工具链固定为 `leanprover/lean4:v4.35.0`，
 Mathlib 固定为 `v4.35.0`。
 
 * v0.1：阴阳、五行、干支、六十甲子；补齐了天干五行映射、地支**本气**五行映射
@@ -18,7 +19,11 @@ Mathlib 固定为 `v4.35.0`。
 * v0.2：紫微十二宫**纯位置结构**（`Fin 12`）：旋转与加法组合、逆操作、
   对宫偏移 6、三合偏移 4/8、三方四正基数 4，以及整体旋转保持这些结构；
   语义宫名与抽象位置分开，**不含星曜与出生排盘**。
-* v0.3 及以后见 `PLAN.md` 路线图。
+* v0.3：来源明确的**年干/年支系小安星**：禄存（依年干）、擎羊/陀罗
+  （随禄存前/后一位）、天马（依年支）。来源、版本、段落定位与短引文登记在
+  `docs/sources.md` §5；地支与 `Position = Fin 12` 的对接（子 0、丑 1、…、
+  亥 11）明确标为项目约定。**不含**出生排盘、历法、流年/大限或吉凶判断。
+* v0.4 及以后见 `PLAN.md` 路线图。
 
 ## 快速开始
 
@@ -42,6 +47,7 @@ lake env lean4-occult pair 甲 子
 lake env lean4-occult pair 甲 丑   # 退出码 1
 lake env lean4-occult list
 lake env lean4-occult ziwei relations 0
+lake env lean4-occult ziwei anstar 甲 子
 ```
 
 `ziwei relations 0` 输出：
@@ -54,6 +60,16 @@ lake env lean4-occult ziwei relations 0
 三方四正 0/4/6/8
 ```
 
+`ziwei anstar 甲 子` 输出（按生年干/支安四颗小星）：
+
+```
+干支 甲子（索引 0）
+禄存 寅 (2)
+擎羊 卯 (3)
+陀罗 丑 (1)
+天马 寅 (2)
+```
+
 ## CLI
 
 ```
@@ -61,6 +77,8 @@ lean4-occult cycle <n>          显示第 n 位（0–59）的甲子及下一步
 lean4-occult pair <天干> <地支>  由干支查索引（要求同阴阳）
 lean4-occult list               列出全部六十甲子
 lean4-occult ziwei relations <位置>  显示位置（0–11）的自身、对宫、三合、三方四正
+lean4-occult ziwei anstar <天干> <地支>
+                                按生年干/支安禄存、擎羊、陀罗、天马
 lean4-occult --help             帮助
 ```
 
@@ -75,6 +93,9 @@ lean4-occult --help             帮助
 * `pair 子 甲`、`pair 甲 X`：未知天干/地支
 * `ziwei relations 12`、`ziwei relations -1`、`ziwei relations abc`：越界或非十进制
 * `ziwei relations`、`ziwei relations 1 2`：缺参或多参
+* `ziwei anstar 甲 丑`、`ziwei anstar 乙 子`：阴阳不同，不是六十甲子中的年份
+* `ziwei anstar 子 甲`、`ziwei anstar 甲 X`：未知天干/地支
+* `ziwei anstar 甲`、`ziwei anstar`、`ziwei anstar 甲 子 丑`：缺参或多参
 
 ## 库结构
 
@@ -89,6 +110,8 @@ lean4-occult --help             帮助
 | `Occult/ZiWei/Position.lean` | `Position = Fin 12`，旋转、对宫、三合、三方四正 |
 | `Occult/ZiWei/Relations.lean` | `Palace` 十二宫名、固定偏移 `offset`、`atPos` |
 | `Occult/ZiWei/Properties.lean` | 旋转保持结构、任意参考位置下的命宫三方四正 |
+| `Occult/ZiWei/Branch.lean` | 十二支与 `Position` 的编号对接（子 0、丑 1、…、亥 11） |
+| `Occult/ZiWei/MinorStar.lean` | 禄存、擎羊、陀罗、天马；`place`/`placeJiaZi` 安星函数 |
 | `Tests.lean` | 关键结论的 `example` 回归检查 |
 | `Main.lean` | CLI |
 
@@ -118,8 +141,19 @@ lean4-occult --help             帮助
 * `ZiWei.Palace.offset_injective` / `card_eq_twelve`：十二宫名与 `Fin 12` 一一对应。
 * `ZiWei.Position.atPos_triad_ming`：任意参考位置下，命、财帛、迁移、官禄
   构成命宫的三方四正。
+* `ZiWei.Branch.ofDiZhi_toDiZhi` / `toDiZhi_ofDiZhi`：地支与 `Position` 的
+  编号映射互逆；`ofDiZhi_bijective` 给出双射。
+* `ZiWei.MinorStar.luCun_toDiZhi`：禄存（依年干）的完整地支表；
+  `luCun_image_card`：10 个天干因丙戊、丁己同宫而只落到 8 个位置。
+* `ZiWei.MinorStar.qingYang_eq_rotate_one` / `tuoLuo_eq_rotate_neg_one`：
+  擎羊、陀罗分别是禄存位置 +1 / −1；`qingYang_gui`、`tuoLuo_gui` 是来源
+  “癸禄在子 → 丑擎羊、亥陀罗”的例子。
+* `ZiWei.MinorStar.tianMa_toDiZhi`：天马（依年支）的完整地支表；
+  `tianMa_image_card`：四个三合组只共用四个马位（像的基数为 4）。
+* `ZiWei.MinorStar.placeJiaZi_jiaZi`：甲子年安星样例（禄存寅、擎羊卯、
+  陀罗丑、天马寅）。
 
-完整清单（151 条 theorem/lemma）见 `docs/scope.md`。
+完整清单（196 条 theorem/lemma）见 `docs/scope.md`。
 
 ### v0.1 陈述复核
 
@@ -134,6 +168,25 @@ lean4-occult --help             帮助
   其中 `DiZhi.wuXing` 是单一**本气**，不是藏干；`docs/sources.md` 同步说明
   这些对应关系尚未做文献核对。
 
+### v0.3 陈述复核与来源边界
+
+* 本版只编码《紫微斗數全書》卷二〈安祿存星訣〉〈安擎羊陀羅二星訣〉
+  〈安天馬星訣〉三条有限规则；来源、修订号、扫描叶面、URL、访问日期与短引文
+  见 `docs/sources.md` §5。
+* `docs/sources.md` §5.3 明确记录三处文本读法：`丙戊巳` 读作丙、戊均在巳；
+  `丁己…午` 读作丁、己均在午；原文“寅午戍”读作“寅午戌”。这些是**解释**，
+  不是把转录文本当成校勘本。
+* “前 = +1、后 = −1”不是项目另选的方向，而是由来源例子
+  “癸禄在子，丑宫安擎羊，亥宫安陀罗”固定（`qingYang_gui`、`tuoLuo_gui`）。
+* 12 支到 0–11 的编号是**项目约定**（`docs/conventions.md` §7），来源只说
+  “子宫/丑宫…”。因此库里同时提供地支表定理（`luCun_toDiZhi` 等），
+  避免只依赖数字。
+* 天魁/天钺、红鸾/天喜、流禄/流羊/流陀/流年天马、月马均**未实现**；
+  天魁/天钺的排除理由（歌诀异文且未说明组内魁/钺归属）见 `docs/sources.md`
+  §5.4。没有把“未实现”写成“已核查”。
+* 证明所得的性质（像的基数、同宫对、非单射等）与来源表格本身分开：
+  它们只说明“按这张表计算会得到什么”，不说明传统体系“有效”。
+
 ### v0.2 陈述复核
 
 * 紫微部分只断言**位置**事实：`Fin 12` 上的旋转、对宫、三合、三方四正，
@@ -145,13 +198,27 @@ lean4-occult --help             帮助
 * 语义宫名与偏移表在 `docs/conventions.md` 第 6 节标为**项目约定**，
   `anchor` 由使用者提供，本库不计算命宫。
 
+## v0.3 来源（可公开核查）
+
+* 可读文本：维基文库《紫微斗數全書》卷二，修订号 **1963110**
+  （2020-09-04），〈安祿存星訣〉〈安擎羊陀羅二星訣〉〈安天馬星訣〉，
+  访问日期 2026-10-20。永久链接：
+  <https://zh.wikisource.org/w/index.php?title=%E7%B4%AB%E5%BE%AE%E6%96%97%E6%95%B8%E5%85%A8%E6%9B%B8/%E5%8D%B7%E4%BA%8C&oldid=1963110>
+* 版本/叶面见证：明刊本《新鋟希夷陳先生紫微斗數全書》七卷
+  （宋·陳摶撰，明·潘希尹補，南陽堂刊本，元数据标 1600），
+  Internet Archive 扫描件第 75 叶（0 基 `n75`）：
+  <https://archive.org/details/20260506_20260506_1217/page/n75/mode/1up>
+* 逐条短引文、读法解释、可靠性/派别/同名规则分析与版权说明见
+  `docs/sources.md` §5。来源只支持“该版本这样写”，不支持任何吉凶或
+  经验有效性主张。
+
 ## 验证记录（本地实测）
 
 环境：NixOS 25.11，Lean 4.35.0，Mathlib v4.35.0（缓存）。
 
 ```
 $ lake build
-Build completed successfully (6285 jobs).
+Build completed successfully (6289 jobs).
 
 $ .lake/build/bin/lean4-occult cycle 0
 索引 0：甲子（甲阳，天干 0，地支 0），下一步 乙丑（索引 1）
@@ -201,9 +268,28 @@ $ .lake/build/bin/lean4-occult ziwei relations ; echo $?
 ...
 1
 
+$ .lake/build/bin/lean4-occult ziwei anstar 甲 子
+干支 甲子（索引 0）
+禄存 寅 (2)
+擎羊 卯 (3)
+陀罗 丑 (1)
+天马 寅 (2)
+
+$ .lake/build/bin/lean4-occult ziwei anstar 癸 亥
+干支 癸亥（索引 59）
+禄存 子 (0)
+擎羊 丑 (1)
+陀罗 亥 (11)
+天马 巳 (5)
+
+$ .lake/build/bin/lean4-occult ziwei anstar 甲 丑 ; echo $?
+错误：甲丑 阴阳不同（甲 序号 0，丑 序号 1），不是六十甲子中的年份
+...
+1
+
 $ ./scripts/smoke.sh
 ...
-通过 29 项，失败 0 项
+通过 46 项，失败 0 项
 ```
 
 公理检查：
@@ -224,7 +310,7 @@ $ ./scripts/check_hygiene.sh
 ==> 禁止关键字检查（sorry / admit / native_decide / implemented_by / extern）
 ==> 自定义 axiom / constant 声明检查
 ==> 收集库内 theorem / lemma
-共 151 条待检查
+共 196 条待检查
 ==> 公理白名单检查
 ==> 公理检查通过：只出现 propext、Classical.choice、Quot.sound
 ```
@@ -248,10 +334,12 @@ Mathlib 4.35 会打印形如
 ## 不做的事
 
 规则引擎、占星、出生排盘、UI 均不在本库范围内，原因见 `docs/scope.md`。
-v0.2 只包含紫微斗数的**纯位置结构**：星曜、安星、四化、限运与大限流年
+v0.2 只包含紫微斗数的**纯位置结构**；v0.3 只增加来源登记过的四颗小星
+（禄存、擎羊、陀罗、天马）。四化、限运、大限流年、出生排盘、吉凶判断
 均不包含；`Palace.atPos` 的 `anchor` 由使用者提供，本库不计算命宫。
 地支藏干明确不属于本库：`DiZhi.wuXing` 只是单一本气。
-传统文献的原文核对也未完成，见 `docs/sources.md`。
+除 `docs/sources.md` §5 登记的三条安星规则外，其余传统说法的原文核对
+仍未完成；未登记的内容不作断言。
 
 ## 许可证
 
