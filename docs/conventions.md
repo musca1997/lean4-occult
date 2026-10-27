@@ -252,3 +252,39 @@ structure JiaZi where
 * 红鸾、天喜：本版本次不实现。
 * 流禄、流羊、流陀、流年天马、月马：**不实现**。
 * 任何吉凶、格局、四化、大限、流年判断：**不实现**。
+
+## 9. v0.4 解释报告（`ziwei explain`）
+
+本节全部是**输出格式与位置事实**的约定，不新增传统规则。
+
+* 报告由 `ZiWei.Explain.buildReport` 从 `JiaZi` 构造；四星位置直接调用
+  v0.3 的 `MinorStar.placeJiaZi`，不重写安星表。
+* `Report.Correct` 不是 `True` 占位符，而是：
+  1. 每个 `StarEntry` 的位置等于 `placeJiaZi`，规则编号等于固定规则；
+  2. 每个 `RelationFact` 自带的位置等于 `placeJiaZi`，且关系类别成立；
+  3. 星曜列表覆盖 `Star.all`；
+  4. 规则列表覆盖全部稳定 `RuleId`；
+  5. 每条规则记录等于其稳定编号展开结果（来源字段没有被替换）。
+  `buildReport_correct` 对任意 `JiaZi` 证明这五点。
+* 规则编号固定为 `docs/sources.md` §6 的七项；类别严格分为
+  `source-supported`、`project-convention`、`mathematical-consequence`。
+* 两星关系只读取两个 `Position`，类别与优先级固定为：
+
+  | 优先级 | 类别 | 条件 |
+  | --- | --- | --- |
+  | 1 | 同宫 | `p = q` |
+  | 2 | 对宫 | `p = q + 6 (mod 12)` |
+  | 3 | 三合 | `p = q + 4` 或 `p = q + 8 (mod 12)` |
+  | 4 | 相邻 | `p = q + 1` 或 `p = q - 1 (mod 12)` |
+  | 5 | 不同宫 | 其余 `p ≠ q` |
+
+  这些是有限位置事实，不是吉凶判断；`classify_sound` 证明分类结果满足上表。
+* 六组无序星对固定为：禄存/擎羊、禄存/陀罗、禄存/天马、擎羊/陀罗、
+  擎羊/天马、陀罗/天马。
+* 文字模板只渲染结构字段（规则代码、位置、支名、关系类别、来源定位与 URL），
+  不把自然语言解释冒充为全文形式化。
+* JSON 使用 `Lean.Json` 构造与转义，`schemaVersion` 固定为 `0.4.0`；
+  字段与示例见 `docs/report-schema.md`。JSON 是输出，不是独立证书；
+  本版未实现外部 certificate checker。
+* `--json` 只能出现一次且必须放在两个干支之后；未知 flag、重复 flag、
+  缺参和多参一律退出码 1，错误只写 stderr。

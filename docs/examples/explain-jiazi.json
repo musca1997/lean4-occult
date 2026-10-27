@@ -1,0 +1,266 @@
+{
+  "derivations": [
+    {
+      "conclusion": {
+        "branch": "寅",
+        "position": 2
+      },
+      "premises": [
+        "生年干 甲（0）"
+      ],
+      "ruleId": "ZW-LUCUN-STEM",
+      "star": "禄存"
+    },
+    {
+      "conclusion": {
+        "branch": "卯",
+        "position": 3
+      },
+      "premises": [
+        "生年干 甲（0）",
+        "中间事实：禄存位于 寅 (2)"
+      ],
+      "ruleId": "ZW-QINGYANG-AFTER-LUCUN",
+      "star": "擎羊"
+    },
+    {
+      "conclusion": {
+        "branch": "丑",
+        "position": 1
+      },
+      "premises": [
+        "生年干 甲（0）",
+        "中间事实：禄存位于 寅 (2)"
+      ],
+      "ruleId": "ZW-TUOLUO-BEFORE-LUCUN",
+      "star": "陀罗"
+    },
+    {
+      "conclusion": {
+        "branch": "寅",
+        "position": 2
+      },
+      "premises": [
+        "生年支 子（0）"
+      ],
+      "ruleId": "ZW-TIANMA-BRANCH",
+      "star": "天马"
+    }
+  ],
+  "facts": [
+    {
+      "kind": "adjacent-palace",
+      "label": "相邻（偏移 ±1）",
+      "left": "禄存",
+      "leftPosition": 2,
+      "right": "擎羊",
+      "rightPosition": 3
+    },
+    {
+      "kind": "adjacent-palace",
+      "label": "相邻（偏移 ±1）",
+      "left": "禄存",
+      "leftPosition": 2,
+      "right": "陀罗",
+      "rightPosition": 1
+    },
+    {
+      "kind": "same-palace",
+      "label": "同宫",
+      "left": "禄存",
+      "leftPosition": 2,
+      "right": "天马",
+      "rightPosition": 2
+    },
+    {
+      "kind": "different-palace",
+      "label": "不同宫",
+      "left": "擎羊",
+      "leftPosition": 3,
+      "right": "陀罗",
+      "rightPosition": 1
+    },
+    {
+      "kind": "adjacent-palace",
+      "label": "相邻（偏移 ±1）",
+      "left": "擎羊",
+      "leftPosition": 3,
+      "right": "天马",
+      "rightPosition": 2
+    },
+    {
+      "kind": "adjacent-palace",
+      "label": "相邻（偏移 ±1）",
+      "left": "陀罗",
+      "leftPosition": 1,
+      "right": "天马",
+      "rightPosition": 2
+    }
+  ],
+  "guarantees": {
+    "certificateNote": "JSON is an output, not a standalone certificate; this version does not re-verify arbitrary JSON",
+    "externalCertificateChecker": false,
+    "scope": "finite positional facts only; no auspiciousness or traditional interpretation",
+    "soundnessTheorem": "Occult.ZiWei.Explain.buildReport_correct",
+    "sourceTranscription": "manual trust boundary; see docs/sources.md §5",
+    "verifiedStructuredLayer": "input, four star positions, pairwise finite relations, rule/source references",
+    "versionCollation": "not a critical edition"
+  },
+  "input": {
+    "branch": "子",
+    "branchIndex": 0,
+    "index": 0,
+    "jiazi": "甲子",
+    "polarity": "yang",
+    "stem": "甲",
+    "stemIndex": 0
+  },
+  "reportKind": "ziwei.explain",
+  "rules": [
+    {
+      "id": "ZW-LUCUN-STEM",
+      "kind": "source-supported",
+      "sources": [
+        {
+          "accessed": "2026-10-20",
+          "locator": "卷二〈安祿存星訣〉〈安擎羊陀羅二星訣〉〈安天馬星訣〉",
+          "quote": "甲生禄存在寅宫，乙生在卯丙戊巳，丁己禄存停午方，庚禄居申辛禄酉，壬禄在亥癸禄子。禄前擎羊后陀罗。假如癸禄在子，丑宫安擎羊，亥宫安陀罗，余仿此。寅午戍人马居申，申子辰人马居寅，巳酉丑人马居亥，亥卯未人马居巳。",
+          "sourceId": "wikisource-ziwei-quanshu-juan2-1963110",
+          "title": "《紫微斗數全書》卷二（维基文库转录）",
+          "url": "https://zh.wikisource.org/w/index.php?title=%E7%B4%AB%E5%BE%AE%E6%96%97%E6%95%B8%E5%85%A8%E6%9B%B8/%E5%8D%B7%E4%BA%8C&oldid=1963110",
+          "version": "oldid=1963110，修订时间 2020-09-04T14:06:27Z"
+        },
+        {
+          "accessed": "2026-10-20",
+          "locator": "第二卷相关安星段落，扫描第 75 叶（0 基 leaf n75）",
+          "quote": "本次只用该叶确认禄存、擎羊、陀罗、天马段落见于该版本；未把它当作逐字校勘依据。",
+          "sourceId": "archive-ziwei-quanshu-ming-n75",
+          "title": "《新鋟希夷陳先生紫微斗數全書》七卷（明刊本）",
+          "url": "https://archive.org/details/20260506_20260506_1217/page/n75/mode/1up",
+          "version": "明·南陽堂刊本，元数据标 1600；Internet Archive 20260506_20260506_1217"
+        }
+      ],
+      "statement": "禄存按生年干落在固定地支宫位（甲寅、乙卯、丙戊巳、丁己午、庚申、辛酉、壬亥、癸子）"
+    },
+    {
+      "id": "ZW-QINGYANG-AFTER-LUCUN",
+      "kind": "source-supported",
+      "sources": [
+        {
+          "accessed": "2026-10-20",
+          "locator": "卷二〈安祿存星訣〉〈安擎羊陀羅二星訣〉〈安天馬星訣〉",
+          "quote": "甲生禄存在寅宫，乙生在卯丙戊巳，丁己禄存停午方，庚禄居申辛禄酉，壬禄在亥癸禄子。禄前擎羊后陀罗。假如癸禄在子，丑宫安擎羊，亥宫安陀罗，余仿此。寅午戍人马居申，申子辰人马居寅，巳酉丑人马居亥，亥卯未人马居巳。",
+          "sourceId": "wikisource-ziwei-quanshu-juan2-1963110",
+          "title": "《紫微斗數全書》卷二（维基文库转录）",
+          "url": "https://zh.wikisource.org/w/index.php?title=%E7%B4%AB%E5%BE%AE%E6%96%97%E6%95%B8%E5%85%A8%E6%9B%B8/%E5%8D%B7%E4%BA%8C&oldid=1963110",
+          "version": "oldid=1963110，修订时间 2020-09-04T14:06:27Z"
+        },
+        {
+          "accessed": "2026-10-20",
+          "locator": "第二卷相关安星段落，扫描第 75 叶（0 基 leaf n75）",
+          "quote": "本次只用该叶确认禄存、擎羊、陀罗、天马段落见于该版本；未把它当作逐字校勘依据。",
+          "sourceId": "archive-ziwei-quanshu-ming-n75",
+          "title": "《新鋟希夷陳先生紫微斗數全書》七卷（明刊本）",
+          "url": "https://archive.org/details/20260506_20260506_1217/page/n75/mode/1up",
+          "version": "明·南陽堂刊本，元数据标 1600；Internet Archive 20260506_20260506_1217"
+        }
+      ],
+      "statement": "擎羊在禄存位置 +1（来源以癸禄在子、丑宫擎羊固定方向）"
+    },
+    {
+      "id": "ZW-TUOLUO-BEFORE-LUCUN",
+      "kind": "source-supported",
+      "sources": [
+        {
+          "accessed": "2026-10-20",
+          "locator": "卷二〈安祿存星訣〉〈安擎羊陀羅二星訣〉〈安天馬星訣〉",
+          "quote": "甲生禄存在寅宫，乙生在卯丙戊巳，丁己禄存停午方，庚禄居申辛禄酉，壬禄在亥癸禄子。禄前擎羊后陀罗。假如癸禄在子，丑宫安擎羊，亥宫安陀罗，余仿此。寅午戍人马居申，申子辰人马居寅，巳酉丑人马居亥，亥卯未人马居巳。",
+          "sourceId": "wikisource-ziwei-quanshu-juan2-1963110",
+          "title": "《紫微斗數全書》卷二（维基文库转录）",
+          "url": "https://zh.wikisource.org/w/index.php?title=%E7%B4%AB%E5%BE%AE%E6%96%97%E6%95%B8%E5%85%A8%E6%9B%B8/%E5%8D%B7%E4%BA%8C&oldid=1963110",
+          "version": "oldid=1963110，修订时间 2020-09-04T14:06:27Z"
+        },
+        {
+          "accessed": "2026-10-20",
+          "locator": "第二卷相关安星段落，扫描第 75 叶（0 基 leaf n75）",
+          "quote": "本次只用该叶确认禄存、擎羊、陀罗、天马段落见于该版本；未把它当作逐字校勘依据。",
+          "sourceId": "archive-ziwei-quanshu-ming-n75",
+          "title": "《新鋟希夷陳先生紫微斗數全書》七卷（明刊本）",
+          "url": "https://archive.org/details/20260506_20260506_1217/page/n75/mode/1up",
+          "version": "明·南陽堂刊本，元数据标 1600；Internet Archive 20260506_20260506_1217"
+        }
+      ],
+      "statement": "陀罗在禄存位置 −1（来源以癸禄在子、亥宫陀罗固定方向）"
+    },
+    {
+      "id": "ZW-TIANMA-BRANCH",
+      "kind": "source-supported",
+      "sources": [
+        {
+          "accessed": "2026-10-20",
+          "locator": "卷二〈安祿存星訣〉〈安擎羊陀羅二星訣〉〈安天馬星訣〉",
+          "quote": "甲生禄存在寅宫，乙生在卯丙戊巳，丁己禄存停午方，庚禄居申辛禄酉，壬禄在亥癸禄子。禄前擎羊后陀罗。假如癸禄在子，丑宫安擎羊，亥宫安陀罗，余仿此。寅午戍人马居申，申子辰人马居寅，巳酉丑人马居亥，亥卯未人马居巳。",
+          "sourceId": "wikisource-ziwei-quanshu-juan2-1963110",
+          "title": "《紫微斗數全書》卷二（维基文库转录）",
+          "url": "https://zh.wikisource.org/w/index.php?title=%E7%B4%AB%E5%BE%AE%E6%96%97%E6%95%B8%E5%85%A8%E6%9B%B8/%E5%8D%B7%E4%BA%8C&oldid=1963110",
+          "version": "oldid=1963110，修订时间 2020-09-04T14:06:27Z"
+        },
+        {
+          "accessed": "2026-10-20",
+          "locator": "第二卷相关安星段落，扫描第 75 叶（0 基 leaf n75）",
+          "quote": "本次只用该叶确认禄存、擎羊、陀罗、天马段落见于该版本；未把它当作逐字校勘依据。",
+          "sourceId": "archive-ziwei-quanshu-ming-n75",
+          "title": "《新鋟希夷陳先生紫微斗數全書》七卷（明刊本）",
+          "url": "https://archive.org/details/20260506_20260506_1217/page/n75/mode/1up",
+          "version": "明·南陽堂刊本，元数据标 1600；Internet Archive 20260506_20260506_1217"
+        }
+      ],
+      "statement": "天马按生年支的三合组落在寅、申、巳、亥之一"
+    },
+    {
+      "id": "PRJ-BRANCH-POSITION",
+      "kind": "project-convention",
+      "sources": [],
+      "statement": "十二支编号为子 0、丑 1、…、亥 11"
+    },
+    {
+      "id": "PRJ-JIAZI-PARITY",
+      "kind": "project-convention",
+      "sources": [],
+      "statement": "输入天干与地支必须同阴阳，即属于六十甲子"
+    },
+    {
+      "id": "MATH-POSITION-CLASSIFY",
+      "kind": "mathematical-consequence",
+      "sources": [],
+      "statement": "两星位置按同宫/对宫/三合/相邻/不同宫作有限分类，优先级固定"
+    }
+  ],
+  "schemaVersion": "0.4.0",
+  "stars": [
+    {
+      "branch": "寅",
+      "position": 2,
+      "ruleId": "ZW-LUCUN-STEM",
+      "star": "禄存"
+    },
+    {
+      "branch": "卯",
+      "position": 3,
+      "ruleId": "ZW-QINGYANG-AFTER-LUCUN",
+      "star": "擎羊"
+    },
+    {
+      "branch": "丑",
+      "position": 1,
+      "ruleId": "ZW-TUOLUO-BEFORE-LUCUN",
+      "star": "陀罗"
+    },
+    {
+      "branch": "寅",
+      "position": 2,
+      "ruleId": "ZW-TIANMA-BRANCH",
+      "star": "天马"
+    }
+  ]
+}

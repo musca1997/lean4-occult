@@ -36,5 +36,8 @@ jobs:
       - name: CLI smoke tests
         run: ./scripts/smoke.sh
 
+      - name: JSON/report consistency tests (all 60 inputs)
+        run: python3 scripts/test_json.py
+
       - name: Proof hygiene (forbidden keywords, custom axioms, axiom whitelist)
         run: ./scripts/check_hygiene.sh

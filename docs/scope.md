@@ -1,8 +1,9 @@
 # 范围与定理清单（scope）
 
-本文件覆盖 v0.1–v0.3：v0.1 是阴阳、五行、干支、六十甲子的有限组合结构；
+本文件覆盖 v0.1–v0.4：v0.1 是阴阳、五行、干支、六十甲子的有限组合结构；
 v0.2 是紫微十二宫的**纯位置结构**；v0.3 是来源明确的**年干/年支系小安星**
-（禄存、擎羊、陀罗、天马），以及与 `Fin 12` 抽象宫位的地支对接。
+（禄存、擎羊、陀罗、天马），以及与 `Fin 12` 抽象宫位的地支对接；
+v0.4 是可追溯解释报告、稳定规则编号、关系分类与 JSON 输出。
 本文件是 `PLAN.md` 的细化，列出全部 theorem/lemma，便于审阅覆盖面。
 
 ## 1. 范围内
@@ -20,6 +21,9 @@ v0.2 是紫微十二宫的**纯位置结构**；v0.3 是来源明确的**年干/
 | `ZiWei.Palace` | `Occult/ZiWei/Relations.lean` | 12 | `Fin 12`（经 `offset` 双射） |
 | `ZiWei.Branch` 的映射 | `Occult/ZiWei/Branch.lean` | — | `DiZhi ≃ Position` |
 | `ZiWei.MinorStar.Star` | `Occult/ZiWei/MinorStar.lean` | 4 | 有限枚举（禄存/擎羊/陀罗/天马） |
+| `ZiWei.Explain.Report` | `Occult/ZiWei/Explain.lean` | — | 输入 + 四星 + 规则 + 六组关系 |
+| `ZiWei.Explain.RuleId` | `Occult/ZiWei/Explain.lean` | 7 | 四来源支持 + 两项目约定 + 一数学推论 |
+| `ZiWei.Explain.RelationKind` | `Occult/ZiWei/Explain.lean` | 5 | 同宫/对宫/三合/相邻/不同宫 |
 | `parseNat?` | `Occult/Cli.lean` | — | 非空 ASCII 十进制解析 |
 
 ### 结构映射
@@ -51,8 +55,11 @@ v0.2 是紫微十二宫的**纯位置结构**；v0.3 是来源明确的**年干/
 | 擎羊/陀罗 | `qingYang`/`tuoLuo` | `qingYang_eq_rotate_one`、`tuoLuo_eq_rotate_neg_one`、`qingYang_ne_luCun`、`qingYang_image_card` |
 | 天马 | `tianMa` | `tianMa_toDiZhi`、`tianMa_image`、`tianMa_image_card`、`tianMa_not_injective` |
 | 综合安星 | `place`/`placeJiaZi` | `place_*`、`placeJiaZi_*`、`placeJiaZi_jiaZi` |
+| 解释报告 | `ZiWei.Explain.buildReport` | `buildReport_correct`、`buildReport_star_positions`、`buildReport_fact_holds` |
+| 关系分类 | `ZiWei.Explain.classify` | `classify_sound`、`mkRelationFact_correct`、`pairFacts_correct` |
+| 报告 JSON | `ZiWei.Explain.reportJson`/`renderJson` | 使用 `Lean.Json`；结构由 `scripts/test_json.py` 穷举检查 |
 
-## 2. 全部 theorem / lemma（共 196 条）
+## 2. 全部 theorem / lemma（v0.1–v0.3 共 196 条）
 
 下表由源文件按 `theorem`/`lemma` 声明自动核对；`scripts/check_hygiene.sh`
 会对其中每一条运行 `#print axioms`，并在出现非标准公理时使 CI 失败。
@@ -101,6 +108,28 @@ v0.2 是紫微十二宫的**纯位置结构**；v0.3 是来源明确的**年干/
 
 `star_all_length`, `star_card_eq_four`, `luCun_toDiZhi`, `luCun_bing_eq_wu`, `luCun_ding_eq_ji`, `luCun_eq_iff`, `luCun_image`, `luCun_image_card`, `qingYang_eq_rotate_one`, `tuoLuo_eq_rotate_neg_one`, `qingYang_toDiZhi`, `tuoLuo_toDiZhi`, `qingYang_gui`, `tuoLuo_gui`, `qingYang_ne_luCun`, `tuoLuo_ne_luCun`, `qingYang_ne_tuoLuo`, `qingYang_image_card`, `tuoLuo_image_card`, `qingYang_image`, `tuoLuo_image`, `tianMa_toDiZhi`, `tianMa_yin_wu_xu`, `tianMa_shen_zi_chen`, `tianMa_si_you_chou`, `tianMa_hai_mao_wei`, `tianMa_image`, `tianMa_image_card`, `tianMa_not_injective`, `place_luCun`, `place_qingYang`, `place_tuoLuo`, `place_tianMa`, `placeJiaZi_luCun`, `placeJiaZi_qingYang`, `placeJiaZi_tuoLuo`, `placeJiaZi_tianMa`, `placeJiaZi_jiaZi`
 
+### v0.4 新增（19 条，累计 215 条）
+
+`Occult/ZiWei/Explain.lean`：
+
+`RuleId.toRule_id`, `RuleId.toRule_sources_source`, `RuleId.toRule_sources_nonsource`,
+`mkStarEntry_correct`, `mkStarEntry_star`, `mkStarEntry_position`,
+`classify_sound`, `classify_ne_different_of_same`, `mkRelationFact_correct`,
+`starPairs_length`, `pairFacts_length`, `pairFacts_correct`, `buildReport_correct`,
+`buildReport_input`, `buildReport_star_coverage`, `buildReport_rule_coverage`,
+`buildReport_rules_correct`, `buildReport_star_positions`, `buildReport_fact_holds`
+
+* `buildReport_correct` 的五个分量都是实际命题：位置等于 `placeJiaZi`、
+  关系类别成立、覆盖 `Star.all`、覆盖全部 `RuleId.all`、规则记录等于稳定编号
+  展开结果（来源字段未被替换）。
+* `classify_sound` 是关系类别的健全性；`pairFacts_correct` 把它逐对应用到
+  实际计算位置。
+* v0.4 **没有**新增传统安星规则；文件只引用 v0.3 的计算函数。
+* JSON 序列化使用标准库 `Lean.Json`；`Tests.lean` 用 `#guard` 检查引号/
+  反斜杠/换行/中文的转义，并用 `scripts/test_json.py` 穷举 60 个输入做
+  CLI/JSON/计算一致性检查。**测试不等于证明**：结构一致性由 Python 检查，
+  结构化健全性由上面的 Lean 定理检查。
+
 ## 3. 范围外
 
 | 项目 | 原因 |
@@ -115,6 +144,8 @@ v0.2 是紫微十二宫的**纯位置结构**；v0.3 是来源明确的**年干/
 | 西方占星 | 需要另一套完整模型与文献核对 |
 | UI / Web / 数据库 | 与数学核心无关 |
 | 文献引文（v0.1/v0.2 部分） | v0.3 只登记了三条安星规则；其余传统说法仍未完成原文核对，见 `docs/sources.md` |
+| 外部 JSON 证书检查器 | v0.4 只输出 JSON，不实现从任意 JSON 重新验证的 checker |
+| v0.5 有限查询与完整性证明 | 仅规划，尚未实现；见 `PLAN.md` |
 
 ## 4. 证明卫生
 
@@ -124,5 +155,6 @@ v0.2 是紫微十二宫的**纯位置结构**；v0.3 是来源明确的**年干/
   `propext`、`Classical.choice`、`Quot.sound`；CI 直接调用该脚本并以其退出码为准。
 * 周期与最小周期分开陈述（见 `docs/conventions.md` 第 4 节）。
 * 紫微 v0.2 部分只证明“位置 + 偏移”的组合事实，不把任何传统宫位含义写成定理。
-* 紫微 v0.3 部分只编码来源登记的三条安星规则；`#print axioms` 对全部
-  196 条 theorem/lemma 运行，白名单不变。
+* 紫微 v0.3 部分只编码来源登记的三条安星规则；v0.4 只增加报告、
+  规则编号与关系分类。`#print axioms` 对全部 **215** 条 theorem/lemma
+  运行，白名单不变。

@@ -1,4 +1,4 @@
-# PLAN — lean4-occult（v0.1、v0.2、v0.3 已完成）
+# PLAN — lean4-occult（v0.1–v0.4 已完成）
 
 状态标记：`[x]` 已完成并经过本地验证，`[ ]` 未开始，`[~]` 有意排除在 v0.1 之外。
 
@@ -136,23 +136,61 @@
       综合安星样例（甲子/癸亥）等回归检查。
 * [x] 文档同步：README、`docs/sources.md`、`docs/conventions.md`、
       `docs/scope.md`；来源短引文注明版权与定位，不复制整节。
-* [x] `scripts/check_hygiene.sh` 覆盖新定理（196 条），仍只允许
+* [x] `scripts/check_hygiene.sh` 覆盖当时新定理（v0.3 时共 196 条；当前 v0.4 共 215 条），仍只允许
       `propext`、`Classical.choice`、`Quot.sound`。
 * [x] **不做**出生排盘、历法、时区、真太阳时、四化、限运、吉凶预测；
       `place` 的输入是**已给定**的年干/年支，不从日期推算。
+
+### v0.4 可追溯解释报告与 JSON `[x]`
+
+* [x] `Occult/ZiWei/Explain.lean`：稳定规则编号 `RuleId`（7 项），严格区分
+      `source-supported` / `project-convention` / `mathematical-consequence`。
+* [x] 四条来源规则接到 `docs/sources.md` §5/§6 已登记的来源 A/B：固定修订号、
+      段落/叶面定位、永久 URL、访问日期、短引文；不伪造来源。
+* [x] `Report` 包含输入、四星位置（支名 + 0–11）、规则、推导节点、六组两两关系；
+      位置全部调用 v0.3 的 `placeJiaZi`，不在报告层重写规则。
+* [x] `Report.Correct` 是实际命题（位置等于计算函数、关系成立、覆盖四星与全部
+      规则）；`buildReport_correct` 对任意 `JiaZi` 证明。
+* [x] 关系分类只读取 `Position`：同宫/对宫/三合/相邻/不同宫，固定优先级；
+      `classify_sound` 证明分类结果满足相应位置命题；明确不是吉凶解释。
+* [x] 固定文字模板 `renderReport` 只渲染可检验字段；明确标注已验证结构化层、
+      来源转录人工信任边界，以及本版**没有**外部 JSON certificate checker。
+* [x] JSON 用标准库 `Lean.Json` 构造与转义，`schemaVersion = 0.4.0`；
+      stdout 纯 JSON，错误 stderr + 非 0；文档 `docs/report-schema.md` 与
+      `docs/examples/explain-jiazi.{json,txt}`。
+* [x] CLI `lean4-occult ziwei explain <天干> <地支> [--json]`，保留已有 CLI；
+      严格校验 `--json` 位置、重复/未知 flag、缺参/多参和同阴阳。
+* [x] `Tests.lean` 增加 v0.4 回归与 JSON 转义 `#guard`；
+      `scripts/test_json.py` 穷举 60 个输入，检查文本、JSON、`anstar` 与独立
+      关系分类一致；`scripts/smoke.sh` 覆盖正负例。
+* [x] `scripts/check_hygiene.sh` 支持带点定理名；215 条 theorem/lemma 全部
+      通过公理白名单。
+* [x] 同步 README / `docs/sources.md` / `docs/conventions.md` / `docs/scope.md`。
+* [x] **不做**新传统规则、通用规则引擎、LLM、出生排盘、UI；不声称来源校勘
+      或吉凶有效性。
+
+### v0.5 有限查询与完整性证明（仅规划，未实现） `[ ]`
+
+* [ ] 有限查询 API（例如按规则编号/星曜/关系筛选报告字段），仍只做位置事实。
+* [ ] 完整性/唯一性证明：明确“这六组关系覆盖全部无序星对”“分类在给定优先级下
+      唯一”等陈述，并为查询结果建立相应健全性/完整性定理。
+* [ ] 若引入外部证书，需单独实现并测试从 JSON 重新验证的 checker；本版没有。
+* [ ] 不把自然语言模板全文形式化；继续区分结构化证明与来源转录信任边界。
 
 ### 之后：规则引擎 / AI `[ ]`
 
 * 在有限结构与来源登记稳定之后，再考虑刑冲合害等规则引擎与机器学习辅助；
 * 这些都不属于“可证明的有限组合结构”，需要单独的范围文件与免责声明。
 
-## 验收标准（v0.1–v0.3）
+## 验收标准（v0.1–v0.4）
 
 1. `lake build` 通过，无 `sorry`/`axiom`/`native_decide`。
 2. `#print axioms` 只出现 Lean 标准公理（`propext`、`Classical.choice`、`Quot.sound`）。
-3. CLI 的合法/非法调用（`cycle`、`pair`、`ziwei relations`、`ziwei anstar`）
-   行为符合 README；smoke 覆盖正负例。
+3. CLI 的合法/非法调用（`cycle`、`pair`、`ziwei relations`、`ziwei anstar`、
+   `ziwei explain`）行为符合 README；smoke 覆盖正负例。
 4. 文档明确区分「数学事实」「项目约定」「来源支持的有限规则」「未核查的传统说法」。
-5. v0.3 的每条编码规则都能追溯到 `docs/sources.md` 登记的版本、段落/叶面、
+5. v0.3/v0.4 的每条编码规则都能追溯到 `docs/sources.md` 登记的版本、段落/叶面、
    URL、访问日期与短引文；不能追溯的内容不实现。
-6. v0.3 的证明性质只陈述“按来源表格计算会得到什么”，不声称传统体系有效。
+6. 证明性质只陈述“按来源表格计算会得到什么”，不声称传统体系有效。
+7. v0.4 报告的每个星位/关系都由实际输入与规则推出（`buildReport_correct`），
+   JSON 是输出而非外部证书；未实现的外部 checker 明确标注。

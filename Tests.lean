@@ -270,4 +270,90 @@ example : ZiWei.MinorStar.placeJiaZi JiaZi.guiHai ZiWei.MinorStar.Star.qingYang 
 example : ZiWei.MinorStar.placeJiaZi JiaZi.guiHai ZiWei.MinorStar.Star.tuoLuo =
     (11 : ZiWei.Position) := rfl
 
+/-! ## 紫微可追溯解释报告（v0.4） -/
+
+-- 任意六十甲子输入的报告都满足结构化健全性：星位等于计算函数，关系成立。
+example (z : JiaZi) : (ZiWei.Explain.buildReport z).Correct :=
+  ZiWei.Explain.buildReport_correct z
+example (z : JiaZi) :
+    ∀ e ∈ (ZiWei.Explain.buildReport z).stars,
+      e.position = ZiWei.MinorStar.placeJiaZi z e.star :=
+  ZiWei.Explain.buildReport_star_positions z
+example (z : JiaZi) :
+    ∀ f ∈ (ZiWei.Explain.buildReport z).facts,
+      f.kind.holds f.leftPosition f.rightPosition :=
+  ZiWei.Explain.buildReport_fact_holds z
+example (z : JiaZi) :
+    (ZiWei.Explain.buildReport z).stars.map (fun e => e.star) =
+      ZiWei.MinorStar.Star.all :=
+  ZiWei.Explain.buildReport_star_coverage z
+example (z : JiaZi) :
+    (ZiWei.Explain.buildReport z).rules.map (fun rule => rule.id) =
+      ZiWei.Explain.RuleId.all :=
+  ZiWei.Explain.buildReport_rule_coverage z
+example (z : JiaZi) :
+    ∀ rule ∈ (ZiWei.Explain.buildReport z).rules, rule = rule.id.toRule :=
+  ZiWei.Explain.buildReport_rules_correct z
+example (r : ZiWei.Explain.RuleId)
+    (h : r.kind = ZiWei.Explain.ProvenanceKind.sourceSupported) :
+    r.toRule.sources = [ZiWei.Explain.sourceWikisource, ZiWei.Explain.sourceScan] :=
+  ZiWei.Explain.RuleId.toRule_sources_source r h
+example (r : ZiWei.Explain.RuleId)
+    (h : r.kind ≠ ZiWei.Explain.ProvenanceKind.sourceSupported) :
+    r.toRule.sources = [] :=
+  ZiWei.Explain.RuleId.toRule_sources_nonsource r h
+
+-- 关系分类是位置事实，不是吉凶解释；分类结果必然满足其语义。
+example (p q : ZiWei.Position) :
+    (ZiWei.Explain.classify p q).holds p q :=
+  ZiWei.Explain.classify_sound p q
+example : ZiWei.Explain.classify (0 : ZiWei.Position) 0 =
+    ZiWei.Explain.RelationKind.samePalace := rfl
+example : ZiWei.Explain.classify (0 : ZiWei.Position) 6 =
+    ZiWei.Explain.RelationKind.oppositePalace := rfl
+example : ZiWei.Explain.classify (0 : ZiWei.Position) 4 =
+    ZiWei.Explain.RelationKind.trinePalace := rfl
+example : ZiWei.Explain.classify (0 : ZiWei.Position) 1 =
+    ZiWei.Explain.RelationKind.adjacentPalace := rfl
+example : ZiWei.Explain.classify (0 : ZiWei.Position) 3 =
+    ZiWei.Explain.RelationKind.differentPalace := rfl
+
+-- 稳定规则编号与类别。
+example : ZiWei.Explain.RuleId.luCunStem.code = "ZW-LUCUN-STEM" := rfl
+example : ZiWei.Explain.RuleId.tianMaBranch.code = "ZW-TIANMA-BRANCH" := rfl
+example : ZiWei.Explain.RuleId.branchPosition.kind =
+    ZiWei.Explain.ProvenanceKind.projectConvention := rfl
+example : ZiWei.Explain.RuleId.luCunStem.kind =
+    ZiWei.Explain.ProvenanceKind.sourceSupported := rfl
+example : ZiWei.Explain.RuleId.relationClassification.kind =
+    ZiWei.Explain.ProvenanceKind.mathematicalConsequence := rfl
+example : ZiWei.Explain.RuleId.all.length = 7 := rfl
+example : ZiWei.Explain.starPairs.length = 6 := rfl
+
+-- 甲子样例：禄存寅、擎羊卯、陀罗丑、天马寅；禄存与天马同宫。
+example : (ZiWei.Explain.mkStarEntry JiaZi.jiaZi ZiWei.MinorStar.Star.luCun).position =
+    (2 : ZiWei.Position) := rfl
+example : (ZiWei.Explain.mkStarEntry JiaZi.jiaZi ZiWei.MinorStar.Star.tianMa).position =
+    (2 : ZiWei.Position) := rfl
+example : (ZiWei.Explain.mkRelationFact JiaZi.jiaZi
+      ZiWei.MinorStar.Star.luCun ZiWei.MinorStar.Star.tianMa).kind =
+    ZiWei.Explain.RelationKind.samePalace := rfl
+
+-- 癸亥边界样例：禄存子 (0)、陀罗亥 (11)；位置 0 与 11 相邻。
+example : (ZiWei.Explain.mkStarEntry JiaZi.guiHai ZiWei.MinorStar.Star.luCun).position =
+    (0 : ZiWei.Position) := rfl
+example : (ZiWei.Explain.mkStarEntry JiaZi.guiHai ZiWei.MinorStar.Star.tuoLuo).position =
+    (11 : ZiWei.Position) := rfl
+example : (ZiWei.Explain.mkRelationFact JiaZi.guiHai
+      ZiWei.MinorStar.Star.luCun ZiWei.MinorStar.Star.tuoLuo).kind =
+    ZiWei.Explain.RelationKind.adjacentPalace := rfl
+
+-- JSON 使用 Lean 标准库转义；这里检查引号、反斜杠、换行与中文。
+#guard Lean.Json.compress (Lean.Json.str "a\"b\n\\c") == "\"a\\\"b\\n\\\\c\""
+#guard Lean.Json.compress (Lean.Json.str "甲子") == "\"甲子\""
+#guard (ZiWei.Explain.renderJson (ZiWei.Explain.buildReport JiaZi.jiaZi)).contains
+    "\"schemaVersion\":\"0.4.0\""
+#guard (ZiWei.Explain.renderJson (ZiWei.Explain.buildReport JiaZi.jiaZi)).contains
+    "\"externalCertificateChecker\":false"
+
 end Tests

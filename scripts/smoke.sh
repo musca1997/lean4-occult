@@ -92,6 +92,23 @@ expect_fail "anstar 缺地支"             "缺少地支参数"          ziwei a
 expect_fail "anstar 缺两参"             "缺少天干和地支参数"    ziwei anstar
 expect_fail "anstar 多参"               "只接受两个参数"        ziwei anstar 甲 子 丑
 
+# v0.4 可追溯解释报告
+expect_ok   "explain 甲子 输入"          "干支 甲子"              ziwei explain 甲 子
+expect_ok   "explain 甲子 禄存寅"        "禄存 寅 (2)"            ziwei explain 甲 子
+expect_ok   "explain 甲子 同宫关系"      "禄存 / 天马：同宫"      ziwei explain 甲 子
+expect_ok   "explain 甲子 信任边界"      "人工信任边界"           ziwei explain 甲 子
+expect_ok   "explain 甲子 JSON schema"   '"schemaVersion":"0.4.0"' ziwei explain 甲 子 --json
+expect_ok   "explain 甲子 JSON 证书边界" '"externalCertificateChecker":false' ziwei explain 甲 子 --json
+expect_ok   "explain 癸亥 边界相邻"      "相邻（偏移 ±1）"        ziwei explain 癸 亥
+expect_fail "explain 甲丑 阴阳不同"      "阴阳不同"              ziwei explain 甲 丑
+expect_fail "explain 乙子 阴阳不同"      "阴阳不同"              ziwei explain 乙 子
+expect_fail "explain 缺两参"             "缺少天干和地支参数"    ziwei explain
+expect_fail "explain 缺地支"             "缺少地支参数"          ziwei explain 甲
+expect_fail "explain 未知选项"           "未知选项"              ziwei explain 甲 子 --yaml
+expect_fail "explain 重复 --json"        "只能出现一次"          ziwei explain 甲 子 --json --json
+expect_fail "explain 多参"               "只接受两个干支参数"    ziwei explain 甲 子 丑
+expect_fail "explain --json 位置错误"    "只接受两个干支参数"    ziwei explain --json 甲 子
+
 count="$("$BIN" list 2>/dev/null | wc -l)"
 if [[ "$count" -ne 60 ]]; then
   echo "FAIL [list 行数] 期望 60，实际 $count"; fail=$((fail+1))

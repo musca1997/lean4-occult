@@ -161,7 +161,31 @@ v0.1/v0.2 不含任何文献引文。v0.3 开始，只对能够公开核查的**
   本项目约定；改变映射会改变 CLI 的数字输出，但不改变地支名输出。所有
   与来源对照的定理都同时给出地支表（`luCun_toDiZhi` 等），以免只依赖数字。
 
-## 6. 版权说明
+## 6. v0.4 稳定规则编号与来源映射
+
+v0.4 **不新增传统安星规则**。它只给已有四颗小星与项目约定分配稳定编号，
+并把这些编号接到 §5 的登记项上。规则编号与实现位置如下：
+
+| 稳定 ID | 类别 | 代码 | 来源/说明 |
+| --- | --- | --- | --- |
+| `ZW-LUCUN-STEM` | 来源支持 | `ZiWei.MinorStar.luCun` | §5.2 禄存行；来源 A 卷二〈安祿存星訣〉 |
+| `ZW-QINGYANG-AFTER-LUCUN` | 来源支持 | `ZiWei.MinorStar.qingYang` | §5.2 擎羊行；来源 A 卷二〈安擎羊陀羅二星訣〉 |
+| `ZW-TUOLUO-BEFORE-LUCUN` | 来源支持 | `ZiWei.MinorStar.tuoLuo` | §5.2 陀罗行；来源 A 同节 |
+| `ZW-TIANMA-BRANCH` | 来源支持 | `ZiWei.MinorStar.tianMa` | §5.2 天马行；来源 A 卷二〈安天馬星訣〉 |
+| `PRJ-BRANCH-POSITION` | 项目约定 | `ZiWei.Branch.ofDiZhi` | §5.2“十二支到位置的编号”行；子 0、…、亥 11 |
+| `PRJ-JIAZI-PARITY` | 项目约定 | CLI 的 `JiaZi` 校验 | §5.2“输入必须是六十甲子”行 |
+| `MATH-POSITION-CLASSIFY` | 数学推论 | `ZiWei.Explain.classify` | 由 `Position` 的偏移计算，不是来源断言 |
+
+* 四条 `ZW-*` 规则的 JSON/文字记录都带来源 A 与来源 B 的 `sourceId`、
+  题名、段落/叶面定位、版本、URL、访问日期与短引文；引文范围与 §5.2 相同。
+* 三条 `PRJ-*` / `MATH-*` 规则**不伪造外部来源**，其 `sources` 为空。
+* 稳定 ID 与 `ZiWei.Explain.RuleId.code` 一一对应；改显示文字不应改 ID。
+  完整报告字段见 `docs/report-schema.md`。
+* 来源边界不变：来源只支持“该版本这样写”，不支持吉凶、经验有效性或
+  版本校勘结论。JSON 输出**不是**可独立复核的证书；v0.4 未实现外部
+  certificate checker。
+
+## 7. 版权说明
 
 * 来源 B 为明代刊本，文本本身已进入公有领域。
 * 来源 A 的**转录文本**由维基文库以 CC BY-SA 4.0 提供；本文件只摘录支持

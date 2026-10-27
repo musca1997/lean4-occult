@@ -38,9 +38,11 @@ def usage : String :=
   "                                  显示位置（0–11）的自身、对宫、三合、三方四正\n" ++
   "  lean4-occult ziwei anstar <天干> <地支>\n" ++
   "                                  按生年干/支安禄存、擎羊、陀罗、天马\n" ++
+  "  lean4-occult ziwei explain <天干> <地支> [--json]\n" ++
+  "                                  生成可追溯的四星位置与关系报告\n" ++
   "  lean4-occult --help             显示本帮助\n" ++
   "\n示例：lean4-occult cycle 0 / lean4-occult pair 甲 子 / lean4-occult ziwei relations 0" ++
-  "\n      lean4-occult ziwei anstar 甲 子"
+  "\n      lean4-occult ziwei anstar 甲 子 / lean4-occult ziwei explain 甲 子 --json"
 
 /-- 位置的中文描述：地支名 + 位置序号。 -/
 def describePosition (p : ZiWei.Position) : String :=
@@ -51,6 +53,48 @@ def fail (msg : String) : IO UInt32 := do
   IO.eprintln ""
   IO.eprintln usage
   return 1
+
+/-- 生成 `ziwei explain` 的文本或 JSON 输出。 -/
+def runExplain (g b : String) (asJson : Bool) : IO UInt32 := do
+  match TianGan.parse g, DiZhi.parse b with
+  | none, _ => fail s!"未知天干 {repr g}（应为 甲 乙 丙 丁 戊 己 庚 辛 壬 癸 之一）"
+  | _, none => fail s!"未知地支 {repr b}（应为 子 丑 寅 卯 辰 巳 午 未 申 酉 戌 亥 之一）"
+  | some g, some b =>
+    if h : g.toNat % 2 = b.toNat % 2 then
+      let z : JiaZi := ⟨g, b, h⟩
+      let report := ZiWei.Explain.buildReport z
+      if asJson then
+        IO.println (ZiWei.Explain.renderJson report)
+      else
+        IO.println (ZiWei.Explain.renderReport report)
+      return 0
+    else
+      IO.eprintln s!"错误：{g.name}{b.name} 阴阳不同（{g.name} 序号 {g.toNat}，{b.name} 序号 {b.toNat}），不是六十甲子中的年份"
+      return 1
+
+/-- 严格解析 `ziwei explain` 后面的参数：两个干支，可选且只能放在最后的 `--json`。 -/
+def explainCommand (rest : List String) : IO UInt32 :=
+  match rest with
+  | [] => fail "ziwei explain 缺少天干和地支参数"
+  | [g] =>
+    if g.startsWith "-" then
+      fail s!"ziwei explain 含未知选项 {repr g}；用法：ziwei explain <天干> <地支> [--json]"
+    else
+      fail "ziwei explain 缺少地支参数"
+  | [g, b] => runExplain g b false
+  | [g, b, "--json"] => runExplain g b true
+  | [_g, _b, flag] =>
+    if flag.startsWith "-" then
+      fail s!"ziwei explain 含未知选项 {repr flag}；只支持可选的 --json，且必须放在最后"
+    else
+      fail "ziwei explain 只接受两个干支参数和一个可选的 --json"
+  | args =>
+    if args.count "--json" > 1 then
+      fail "ziwei explain 的 --json 只能出现一次"
+    else if args.any (fun s => s.startsWith "-" && s != "--json") then
+      fail "ziwei explain 含未知选项；只支持可选的 --json"
+    else
+      fail "ziwei explain 只接受两个干支参数和一个可选的 --json（拒绝多余参数）"
 
 def main (args : List String) : IO UInt32 := do
   match args with
@@ -124,4 +168,6 @@ def main (args : List String) : IO UInt32 := do
     fail "ziwei anstar 缺少地支参数"
   | "ziwei" :: "anstar" :: _ :: _ =>
     fail "ziwei anstar 只接受两个参数（天干 地支）"
+  | "ziwei" :: "explain" :: rest =>
+    explainCommand rest
   | _ => fail s!"无法识别的参数：{args}"

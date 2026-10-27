@@ -3,14 +3,15 @@
 用 Lean 4 形式化**阴阳、五行、十天干、十二地支、六十甲子**的有限组合结构，
 并证明其基本性质（基数、编码往返、周期与最小正周期、同阴阳配对双射）；
 v0.2 起还包括**紫微十二宫的纯位置结构**（旋转、对宫、三合、三方四正）；
-v0.3 增加**来源明确的年干/年支系小安星**（禄存、擎羊、陀罗、天马）。
+v0.3 增加**来源明确的年干/年支系小安星**（禄存、擎羊、陀罗、天马）；
+v0.4 增加**可追溯解释报告**（稳定规则编号、六组位置关系、文字与 JSON 输出）。
 
 > 本项目只处理**可精确定义的有限结构**。它不声称、也不检验任何传统术数体系
 > 的经验有效性；`docs/sources.md` 明确列出哪些内容属于项目约定、哪些尚未核查。
 
 ## 状态
 
-v0.3，可构建、可运行。工具链固定为 `leanprover/lean4:v4.35.0`，
+v0.4，可构建、可运行。工具链固定为 `leanprover/lean4:v4.35.0`，
 Mathlib 固定为 `v4.35.0`。
 
 * v0.1：阴阳、五行、干支、六十甲子；补齐了天干五行映射、地支**本气**五行映射
@@ -23,7 +24,12 @@ Mathlib 固定为 `v4.35.0`。
   （随禄存前/后一位）、天马（依年支）。来源、版本、段落定位与短引文登记在
   `docs/sources.md` §5；地支与 `Position = Fin 12` 的对接（子 0、丑 1、…、
   亥 11）明确标为项目约定。**不含**出生排盘、历法、流年/大限或吉凶判断。
-* v0.4 及以后见 `PLAN.md` 路线图。
+* v0.4：**可追溯解释报告**。`ziwei explain <天干> <地支> [--json]` 输出输入、
+  四星位置、稳定规则编号、来源引用、推导节点与六组两两位置关系。结构化报告
+  有实际健全性定理 `buildReport_correct`；JSON 用标准库 `Lean.Json` 转义，
+  `schemaVersion = 0.4.0`。**不新增传统规则**，不做通用引擎、LLM、出生排盘或 UI。
+  来源转录仍需人工核对；本版**没有**外部 JSON 证书检查器。
+* v0.5 及以后见 `PLAN.md` 路线图（有限查询与完整性证明仅规划，未实现）。
 
 ## 快速开始
 
@@ -48,6 +54,8 @@ lake env lean4-occult pair 甲 丑   # 退出码 1
 lake env lean4-occult list
 lake env lean4-occult ziwei relations 0
 lake env lean4-occult ziwei anstar 甲 子
+lake env lean4-occult ziwei explain 甲 子
+lake env lean4-occult ziwei explain 甲 子 --json
 ```
 
 `ziwei relations 0` 输出：
@@ -70,6 +78,32 @@ lake env lean4-occult ziwei anstar 甲 子
 天马 寅 (2)
 ```
 
+`ziwei explain 甲 子` 的核心输出（完整固定模板）：
+
+```
+紫微小安星解释报告（schema 0.4.0）
+干支 甲子（索引 0；甲阳；天干 0，地支 0）
+规则：
+  [ZW-LUCUN-STEM] 禄存按生年干落在固定地支宫位（……）（来源支持）
+  ……
+星曜位置：
+  禄存 寅 (2)  规则 ZW-LUCUN-STEM
+  擎羊 卯 (3)  规则 ZW-QINGYANG-AFTER-LUCUN
+  陀罗 丑 (1)  规则 ZW-TUOLUO-BEFORE-LUCUN
+  天马 寅 (2)  规则 ZW-TIANMA-BRANCH
+两两关系（有限位置事实，不是吉凶解释）：
+  禄存 / 擎羊：相邻（偏移 ±1）；位置 2 / 3
+  禄存 / 天马：同宫；位置 2 / 2
+  ……
+保证范围：
+  已验证结构化层：……见 buildReport_correct。
+  人工信任边界：来源转录、短引文与读法需人工核对 docs/sources.md §5……
+  外部证书：本版未实现从任意 JSON 重新验证的证书检查器……
+```
+
+JSON 模式只向 stdout 输出一个对象；字段、关系语义与信任边界见
+`docs/report-schema.md`，完整示例见 `docs/examples/explain-jiazi.json`。
+
 ## CLI
 
 ```
@@ -79,6 +113,8 @@ lean4-occult list               列出全部六十甲子
 lean4-occult ziwei relations <位置>  显示位置（0–11）的自身、对宫、三合、三方四正
 lean4-occult ziwei anstar <天干> <地支>
                                 按生年干/支安禄存、擎羊、陀罗、天马
+lean4-occult ziwei explain <天干> <地支> [--json]
+                                可追溯四星位置与六组位置关系报告
 lean4-occult --help             帮助
 ```
 
@@ -96,6 +132,10 @@ lean4-occult --help             帮助
 * `ziwei anstar 甲 丑`、`ziwei anstar 乙 子`：阴阳不同，不是六十甲子中的年份
 * `ziwei anstar 子 甲`、`ziwei anstar 甲 X`：未知天干/地支
 * `ziwei anstar 甲`、`ziwei anstar`、`ziwei anstar 甲 子 丑`：缺参或多参
+* `ziwei explain 甲 丑`、`ziwei explain 乙 子`：阴阳不同，不是六十甲子中的年份
+* `ziwei explain`、`ziwei explain 甲`、`ziwei explain 甲 子 丑`：缺参或多参
+* `ziwei explain 甲 子 --yaml`、`ziwei explain --json 甲 子`：未知/位置错误的选项
+* `ziwei explain 甲 子 --json --json`：重复 `--json`
 
 ## 库结构
 
@@ -112,8 +152,11 @@ lean4-occult --help             帮助
 | `Occult/ZiWei/Properties.lean` | 旋转保持结构、任意参考位置下的命宫三方四正 |
 | `Occult/ZiWei/Branch.lean` | 十二支与 `Position` 的编号对接（子 0、丑 1、…、亥 11） |
 | `Occult/ZiWei/MinorStar.lean` | 禄存、擎羊、陀罗、天马；`place`/`placeJiaZi` 安星函数 |
+| `Occult/ZiWei/Explain.lean` | 稳定规则编号、来源引用、报告语义 `Report.Correct`、关系分类、文字/JSON 输出 |
 | `Tests.lean` | 关键结论的 `example` 回归检查 |
-| `Main.lean` | CLI |
+| `Main.lean` | CLI（含 `ziwei explain` 严格参数检查） |
+| `docs/report-schema.md` | v0.4 报告字段、关系语义、信任边界与测试依赖 |
+| `scripts/test_json.py` | 穷举 60 个输入的文本/JSON/计算一致性测试（Python 标准库） |
 
 ## 主要定理
 
@@ -152,8 +195,14 @@ lean4-occult --help             帮助
   `tianMa_image_card`：四个三合组只共用四个马位（像的基数为 4）。
 * `ZiWei.MinorStar.placeJiaZi_jiaZi`：甲子年安星样例（禄存寅、擎羊卯、
   陀罗丑、天马寅）。
+* `ZiWei.Explain.buildReport_correct`：任意六十甲子输入生成的报告都满足
+  `Report.Correct`：每个星位等于 `placeJiaZi`、每条关系类别成立、覆盖四星与
+  全部稳定规则编号。它不是“报告里存一个已证 `True`”。
+* `ZiWei.Explain.classify_sound`：关系分类（同宫/对宫/三合/相邻/不同宫）
+  的结果确实满足对应位置命题；`pairFacts_correct` 把它逐对应用到实际位置。
+* `ZiWei.Explain.RuleId.toRule_id` 等：稳定规则编号与报告规则记录一致。
 
-完整清单（196 条 theorem/lemma）见 `docs/scope.md`。
+完整清单（**215** 条 theorem/lemma）见 `docs/scope.md`。
 
 ### v0.1 陈述复核
 
@@ -187,6 +236,24 @@ lean4-occult --help             帮助
 * 证明所得的性质（像的基数、同宫对、非单射等）与来源表格本身分开：
   它们只说明“按这张表计算会得到什么”，不说明传统体系“有效”。
 
+### v0.4 陈述复核与信任边界
+
+* 报告只由已有计算函数构造：`buildReport` 中四星位置来自
+  `MinorStar.placeJiaZi`；关系来自同一位置的 `classify`。没有在报告层重写
+  安星表，也没有新增传统规则。
+* `Report.Correct` 是实际命题，不是 `True`：`buildReport_correct` 证明四星位置
+  等于计算函数、六组关系类别成立、星曜覆盖 `Star.all`、规则覆盖 `RuleId.all`。
+* 关系只是有限位置事实：同宫、对宫（偏移 6）、三合（偏移 4/8）、相邻
+  （偏移 ±1）或其余不同宫；优先级固定。`classify_sound` 证明分类结果满足
+  对应位置命题。没有任何吉凶、格局或传统解释被写成定理。
+* 稳定规则编号 `ZW-*` / `PRJ-*` / `MATH-*` 在 `docs/sources.md` §6 登记；
+  四条来源规则引用 §5 的来源 A/B，三条项目/数学规则不伪造外部来源。
+* 文字模板只渲染可检验字段，并明确写出“已验证结构化层 / 来源转录人工信任
+  边界 / 本版无外部证书检查器”。JSON 是输出而非证书；本版**不**实现从任意
+  JSON 重新验证的 checker。
+* `scripts/test_json.py` 穷举 60 个输入，检查文本、JSON、`anstar` 与独立关系
+  分类一致；这是测试，不是证明。结构化健全性由 Lean 定理保证。
+
 ### v0.2 陈述复核
 
 * 紫微部分只断言**位置**事实：`Fin 12` 上的旋转、对宫、三合、三方四正，
@@ -198,7 +265,7 @@ lean4-occult --help             帮助
 * 语义宫名与偏移表在 `docs/conventions.md` 第 6 节标为**项目约定**，
   `anchor` 由使用者提供，本库不计算命宫。
 
-## v0.3 来源（可公开核查）
+## v0.3/v0.4 来源（可公开核查）
 
 * 可读文本：维基文库《紫微斗數全書》卷二，修订号 **1963110**
   （2020-09-04），〈安祿存星訣〉〈安擎羊陀羅二星訣〉〈安天馬星訣〉，
@@ -209,8 +276,8 @@ lean4-occult --help             帮助
   Internet Archive 扫描件第 75 叶（0 基 `n75`）：
   <https://archive.org/details/20260506_20260506_1217/page/n75/mode/1up>
 * 逐条短引文、读法解释、可靠性/派别/同名规则分析与版权说明见
-  `docs/sources.md` §5。来源只支持“该版本这样写”，不支持任何吉凶或
-  经验有效性主张。
+  `docs/sources.md` §5；v0.4 稳定规则编号映射见 §6。来源只支持
+  “该版本这样写”，不支持任何吉凶或经验有效性主张。
 
 ## 验证记录（本地实测）
 
@@ -218,7 +285,7 @@ lean4-occult --help             帮助
 
 ```
 $ lake build
-Build completed successfully (6289 jobs).
+Build completed successfully (6291 jobs).
 
 $ .lake/build/bin/lean4-occult cycle 0
 索引 0：甲子（甲阳，天干 0，地支 0），下一步 乙丑（索引 1）
@@ -287,9 +354,51 @@ $ .lake/build/bin/lean4-occult ziwei anstar 甲 丑 ; echo $?
 ...
 1
 
+$ .lake/build/bin/lean4-occult ziwei explain 甲 子
+紫微小安星解释报告（schema 0.4.0）
+干支 甲子（索引 0；甲阳；天干 0，地支 0）
+规则：
+  [ZW-LUCUN-STEM] ……（来源支持）
+  ……
+星曜位置：
+  禄存 寅 (2)  规则 ZW-LUCUN-STEM
+  ……
+两两关系（有限位置事实，不是吉凶解释）：
+  禄存 / 天马：同宫；位置 2 / 2
+  ……
+保证范围：
+  已验证结构化层：……见 buildReport_correct。
+  人工信任边界：……
+  外部证书：本版未实现从任意 JSON 重新验证的证书检查器……
+
+$ .lake/build/bin/lean4-occult ziwei explain 甲 子 --json | python3 -m json.tool | head
+{
+    "derivations": [ ... ],
+    "facts": [ ... ],
+    "guarantees": { "externalCertificateChecker": false, ... },
+    "input": { "jiazi": "甲子", "index": 0, ... },
+    "reportKind": "ziwei.explain",
+    "rules": [ ... ],
+    "schemaVersion": "0.4.0",
+    "stars": [ ... ]
+}
+
+$ .lake/build/bin/lean4-occult ziwei explain 甲 子 --yaml ; echo $?
+错误：ziwei explain 含未知选项 "--yaml"；只支持可选的 --json，且必须放在最后
+...
+1
+
+$ .lake/build/bin/lean4-occult ziwei explain 甲 子 --json --json ; echo $?
+错误：ziwei explain 的 --json 只能出现一次
+...
+1
+
 $ ./scripts/smoke.sh
 ...
-通过 46 项，失败 0 项
+通过 61 项，失败 0 项
+
+$ python3 scripts/test_json.py
+ok: 60/60 inputs, text + JSON + anstar consistency, invalid-input rejection (...)
 ```
 
 公理检查：
@@ -310,7 +419,7 @@ $ ./scripts/check_hygiene.sh
 ==> 禁止关键字检查（sorry / admit / native_decide / implemented_by / extern）
 ==> 自定义 axiom / constant 声明检查
 ==> 收集库内 theorem / lemma
-共 196 条待检查
+共 215 条待检查
 ==> 公理白名单检查
 ==> 公理检查通过：只出现 propext、Classical.choice、Quot.sound
 ```
@@ -335,9 +444,12 @@ Mathlib 4.35 会打印形如
 
 规则引擎、占星、出生排盘、UI 均不在本库范围内，原因见 `docs/scope.md`。
 v0.2 只包含紫微斗数的**纯位置结构**；v0.3 只增加来源登记过的四颗小星
-（禄存、擎羊、陀罗、天马）。四化、限运、大限流年、出生排盘、吉凶判断
-均不包含；`Palace.atPos` 的 `anchor` 由使用者提供，本库不计算命宫。
+（禄存、擎羊、陀罗、天马）；v0.4 只增加可追溯报告、稳定规则编号与关系输出，
+不新增传统规则，也不实现通用规则引擎/LLM。四化、限运、大限流年、出生排盘、
+吉凶判断均不包含；`Palace.atPos` 的 `anchor` 由使用者提供，本库不计算命宫。
 地支藏干明确不属于本库：`DiZhi.wuXing` 只是单一本气。
+v0.4 没有实现外部 JSON 证书检查器；JSON 是输出，不是独立证书。
+v0.5 的有限查询与完整性证明只在 `PLAN.md` 中规划，尚未实现。
 除 `docs/sources.md` §5 登记的三条安星规则外，其余传统说法的原文核对
 仍未完成；未登记的内容不作断言。
 

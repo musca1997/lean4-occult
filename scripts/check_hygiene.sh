@@ -43,7 +43,7 @@ for f in $(find Occult -name '*.lean' | sort); do
     Occult/ZiWei/*)  ns="Occult.ZiWei.$base" ;;
     *)               ns="Occult.$base" ;;
   esac
-  { grep -hoE '^[[:space:]]*(@\[[^]]*\][[:space:]]*)?(private[[:space:]]+|protected[[:space:]]+)?(theorem|lemma)[[:space:]]+[A-Za-z_][A-Za-z0-9_?!'"'"']*' "$f" || true; } \
+  { grep -hoE '^[[:space:]]*(@\[[^]]*\][[:space:]]*)?(private[[:space:]]+|protected[[:space:]]+)?(theorem|lemma)[[:space:]]+[A-Za-z_][A-Za-z0-9_.?!'"'"']*' "$f" || true; } \
     | sed -E 's/^[[:space:]]*(@\[[^]]*\][[:space:]]*)?(private[[:space:]]+|protected[[:space:]]+)?(theorem|lemma)[[:space:]]+//' \
     | while IFS= read -r name; do printf '%s.%s\n' "$ns" "$name"; done
 done | sort -u > "$names_file"
